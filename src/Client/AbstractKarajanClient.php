@@ -6,7 +6,7 @@ use GuzzleHttp\Client;
 
 abstract AbstractKarajanClient
 {
-    public function createClient($serverType = 'karajan', $verify = false): Client
+    public function createClient(string $serverType = 'karajan', bool $verify = false): Client
     {
         $server = json_decode(Capsule::table('tblservers')->where('type', $serverType)->get(), true);
 
@@ -19,6 +19,12 @@ abstract AbstractKarajanClient
             'base_uri' => sprintf('%s://%s:%s', $server[0]['secure'] == 'on' ? 'https' : 'http', $server[0]['hostname'], $server[0]['port']),
             'verify' => $verify
         ]);
+    }
+
+    public function request(string $method = 'GET', string $url, array $options = [], string $serverType = 'karajan'): array
+    {
+        $httpClient = $this->createClient($serverType);
+        return $httpClient->request($method, $url, $options);
     }
 
     public function fetchAuthToken($serverType = 'karajan'): array

@@ -84,7 +84,7 @@ interface WhmcsRepositoryInterface
     /**
      * @return array<int, \stdClass>
      */
-    public function getClientDomain(int $clientId, string $domainName): ?array
+    public function getClientDomain(int $clientId, string $domainName): ?array;
 
     /**
      * @return array<int, \stdClass>
