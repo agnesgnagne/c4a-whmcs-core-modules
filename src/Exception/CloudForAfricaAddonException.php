@@ -2,7 +2,7 @@
 
 namespace WHMCS\Cloud4Africa\Exception;
 
-use WHMCS\Cloud4Africa\Util\Translator;
+use WHMCS\Cloud4Africa\Translation\Translator;
 
 class CloudForAfricaAddonException
 {

@@ -3,6 +3,7 @@
 namespace WHMCS\Cloud4Africa\Client;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\Response;
 
 abstract AbstractKarajanClient
 {
@@ -21,7 +22,7 @@ abstract AbstractKarajanClient
         ]);
     }
 
-    public function request(string $method = 'GET', string $url, array $options = [], string $serverType = 'karajan'): array
+    public function request(string $method = 'GET', string $url, array $options = [], string $serverType = 'karajan'): ?Response
     {
         $httpClient = $this->createClient($serverType);
         return $httpClient->request($method, $url, $options);
