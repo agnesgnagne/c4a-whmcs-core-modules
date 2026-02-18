@@ -1,7 +1,7 @@
 {
-	"name": "c4a/whmcs-localapi",
+	"name": "c4a/whmcs-core-modules",
   	"type": "library",
-  	"description": "WHMCS Local API",
+  	"description": "WHMCS Core Module",
 	"autoload" : {
 		"psr-4" : {
 			"WHMCS\\Cloud4Africa\\" : "src"
@@ -10,5 +10,5 @@
 	"require" : {
 		"guzzlehttp/psr7" : "^2.0",
 		"guzzlehttp/promises" : "^1.5"
-	},
+	}
 }
