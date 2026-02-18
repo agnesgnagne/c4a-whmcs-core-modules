@@ -1,14 +1,10 @@
 {
 	"name": "c4a/whmcs-core-modules",
   	"type": "library",
-  	"description": "WHMCS Core Module",
+  	"description": "WHMCS Core Modules",
 	"autoload" : {
 		"psr-4" : {
 			"WHMCS\\Cloud4Africa\\" : "src"
 		}
-	},
-	"require" : {
-		"guzzlehttp/psr7" : "^2.0",
-		"guzzlehttp/promises" : "^1.5"
 	}
 }
