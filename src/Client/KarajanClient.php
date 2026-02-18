@@ -1,6 +1,6 @@
 <?php
 
-namespace WHMCS\Cloud4Africa\Service;
+namespace WHMCS\Cloud4Africa\Client;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
@@ -8,24 +8,9 @@ use GuzzleHttp\RequestOptions;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use WHMCS\Cloud4Africa\Util\Translator;
 
-class KarajanClient
+class KarajanClient extends AbstractKarajanClient
 {
-    public static function createHttpClient()
-    {
-        $server = json_decode(Capsule::table('tblservers')->where('type', 'karajan')->get(), true);
-
-        if (true === empty($server[0])) {
-            logModuleCall('c4a_whmcs', __FUNCTION__, [], $translator->trans('error.server_not_found'));
-            throw new \Exception($translator->trans('error.default'));
-        }
-
-        return new Client([
-            'base_uri' => sprintf('%s://%s:%s', $server[0]['secure'] == 'on' ? 'https' : 'http', $server[0]['hostname'], $server[0]['port']),
-            'verify' => false
-        ]);
-    }
-
-    public static function fetchAuthToken()
+    public function fetchAuthToken($serverType = 'karajan'): array
     {
         self::initializeTokenDatabaseSchema();
 
@@ -36,9 +21,9 @@ class KarajanClient
         $projectId = $token->project_id;
 
         if (! $accessToken) {
-            $httpClient = self::createHttpClient();
+            $httpClient = $this->createClient($serverType);
 
-            $server = json_decode(Capsule::table('tblservers')->where('type', 'karajan')->get(), true);
+            $server = json_decode(Capsule::table('tblservers')->where('type', $serverType)->get(), true);
             $results = localAPI('DecryptPassword', ['password2' => $server[0]['password']]);
             $password = $results['password'];
 

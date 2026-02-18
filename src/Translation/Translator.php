@@ -1,10 +1,10 @@
 <?php
 
-namespace WHMCS\Cloud4Africa\Util;
+namespace WHMCS\Cloud4Africa\Translation;
 
-class Translator
+class Translator implements TranslatorInterface
 {
-    public function trans($name, $locale = null, array $parameters = [], $translationDir = null)
+    public function trans($name, $locale = null, array $parameters = [], $translationDir = null): ?string
     {
         $locale = false === empty($locale) ? $locale : 'french';
         $translationDir = false === empty($translationDir) ? $translationDir : __DIR__ . '/../../lang';

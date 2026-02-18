@@ -1,0 +1,26 @@
+<?php
+
+namespace WHMCS\Cloud4Africa\Client;
+
+use GuzzleHttp\Client;
+
+abstract AbstractKarajanClient
+{
+    public function createClient($serverType = 'karajan', $verify = false): Client
+    {
+        $server = json_decode(Capsule::table('tblservers')->where('type', $serverType)->get(), true);
+
+        if (true === empty($server[0])) {
+            logModuleCall('c4a_whmcs', __FUNCTION__, [], $translator->trans('error.server_not_found'));
+            throw new \Exception($translator->trans('error.default'));
+        }
+
+        return new Client([
+            'base_uri' => sprintf('%s://%s:%s', $server[0]['secure'] == 'on' ? 'https' : 'http', $server[0]['hostname'], $server[0]['port']),
+            'verify' => $verify
+        ]);
+    }
+
+    public function fetchAuthToken($serverType = 'karajan'): array
+    {}
+}
