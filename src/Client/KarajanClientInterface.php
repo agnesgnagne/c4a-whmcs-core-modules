@@ -8,7 +8,7 @@ interface KarajanClientInterface
 {
     public function createClient(string $serverType, bool $verify = false): Client;
 
-    public function request(string $method = 'GET', string $url, array $options = [], string $serverType = 'karajan'): ?Response;
+    public function request(string $method, string $url, array $options = [], string $serverType = 'karajan'): ?Response;
 
     public function fetchAuthToken(): array;
 }

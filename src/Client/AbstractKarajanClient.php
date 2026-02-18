@@ -22,7 +22,7 @@ abstract AbstractKarajanClient
         ]);
     }
 
-    public function request(string $method = 'GET', string $url, array $options = [], string $serverType = 'karajan'): ?Response
+    public function request(string $method, string $url, array $options = [], string $serverType = 'karajan'): ?Response
     {
         $httpClient = $this->createClient($serverType);
         return $httpClient->request($method, $url, $options);
