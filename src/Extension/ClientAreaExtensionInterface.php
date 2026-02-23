@@ -10,6 +10,8 @@ interface ClientAreaExtensionInterface
     public function renderSidebarItems(string $currentLink): array;
 
     public function renderDashboardMetrics(): array;
+    
+    public function renderDashboardMetricItem(): array;
 
     public function buildPrimaryNavbar(): void;
 

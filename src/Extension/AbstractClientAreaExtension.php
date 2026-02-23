@@ -4,7 +4,7 @@ namespace WHMCS\Cloud4Africa\Extension;
 
 use Carbon\Carbon;
 use WHMCS\Cloud4Africa\Repository\WhmcsRepositoryInterface;
-use WHMCS\Cloud4Africa\Translation\Translator;
+use WHMCS\Cloud4Africa\Translation\TranslatorInterface;
 use WHMCS\Database\Capsule;
 use WHMCS\View\Menu\Item as MenuItem;
 
@@ -19,7 +19,7 @@ class AbstractClientAreaExtension implements ClientAreaExtensionInterface
     /** @var array $params **/
     private array $params;
 
-    public function __construct(WhmcsRepositoryInterface $whmcsRepository, Translator $translator, array $params)
+    public function __construct(WhmcsRepositoryInterface $whmcsRepository, TranslatorInterface $translator, array $params)
     {
         $this->params = $params;
         $this->whmcsRepository = $whmcsRepository;
@@ -27,6 +27,9 @@ class AbstractClientAreaExtension implements ClientAreaExtensionInterface
     }
 
     public function renderSidebarItem(string $currentLink): array
+    {}
+
+    public function renderDashboardMetricItem(): array;
     {}
 
     public function renderSidebarItems(string $currentLink): array
@@ -86,8 +89,8 @@ class AbstractClientAreaExtension implements ClientAreaExtensionInterface
                         $moduleAddonTranslator = new $moduleAddonTranslatorClass($this->params['locale']);
                         $moduleAddonExtension = new $moduleAddonExtensionClass($this->whmcsRepository, $moduleAddonTranslator, []);
 
-                        if (is_callable([$moduleAddonExtension, 'renderDashboardMetrics'])) {
-                            if ($metric = $moduleAddonExtension->renderDashboardMetrics()) {
+                        if (is_callable([$moduleAddonExtension, 'renderDashboardMetric'])) {
+                            if ($metric = $moduleAddonExtension->renderDashboardMetric()) {
                                 $metrics[] = $metric;
                             }
                         }
