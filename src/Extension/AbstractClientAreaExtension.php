@@ -5,10 +5,10 @@ namespace WHMCS\Cloud4Africa\Extension;
 use Carbon\Carbon;
 use WHMCS\Cloud4Africa\Repository\WhmcsRepositoryInterface;
 use WHMCS\Cloud4Africa\Translation\TranslatorInterface;
-use WHMCS\Database\Capsule;
+use Illuminate\Database\Capsule\Manager as Capsule;
 use WHMCS\View\Menu\Item as MenuItem;
 
-class AbstractClientAreaExtension implements ClientAreaExtensionInterface
+abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterface
 {
     /** @var Translator $translator **/
     private $translator;
@@ -29,7 +29,7 @@ class AbstractClientAreaExtension implements ClientAreaExtensionInterface
     public function renderSidebarItem(string $currentLink): array
     {}
 
-    public function renderDashboardMetricItem(): array;
+    public function renderDashboardMetricItem(): array
     {}
 
     public function renderSidebarItems(string $currentLink): array
@@ -48,13 +48,13 @@ class AbstractClientAreaExtension implements ClientAreaExtensionInterface
             }
 
             if ($module->name == 'c4a_domain_manager') {
-                $hostings = Capsule::table('tbldomains')->where('userid', $this->params['userId'])->get();
+                $hostings = Capsule::table('tbldomains')->where('userid', $this->params['uid'])->get();
             }
 
             if ($hostings || $module->name === 'c4a_console' || $module->name === 'c4a_account_manager') {
                 $moduleAddonExtensionClass = 'WHMCS\Module\Addon\\' . $module->name . '\Client\Extension\ClientAreaExtension';
                 $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\\' . $module->name . '\Client\Util\Translator';
-                $moduleAddonTranslator = new $moduleAddonTranslatorClass($this->params['locale']);
+                $moduleAddonTranslator = new $moduleAddonTranslatorClass($this->params['language']);
                 $moduleAddonExtension = new $moduleAddonExtensionClass($this->whmcsRepository, $moduleAddonTranslator, []);
 
                 if (is_callable([$moduleAddonExtension, 'renderSidebarItem'])) {
@@ -77,16 +77,16 @@ class AbstractClientAreaExtension implements ClientAreaExtensionInterface
         foreach (Capsule::table('mod_c4a_addons')->orderBy('position', 'asc')->get() as $module) {
             if ($module->name != 'c4a_console' && $module->name != 'c4a_account_manager') {
                 if ($module->name == 'c4a_domain_manager') {
-                    $hostings = Capsule::table('tbldomains')->where('userid', $this->params['userId'])->get();
+                    $hostings = Capsule::table('tbldomains')->where('userid', $this->params['uid'])->get();
                 } else {
                     $constantsClass = 'WHMCS\Module\Addon\\' . $module->name . '\Constants';
                     $productSlug = $constantsClass::PROVISIONING_ALGORITHM_NAME;
-                    $hostings = Capsule::select('select * from tblhosting as hosting join tblproducts as product on hosting.packageid = product.id where hosting.userid = ? and product.slug = ?', [$this->params['userId'], $productSlug]);
+                    $hostings = Capsule::select('select * from tblhosting as hosting join tblproducts as product on hosting.packageid = product.id where hosting.userid = ? and product.slug = ?', [$this->params['uid'], $productSlug]);
 
                     if ($hostings) {
                         $moduleAddonExtensionClass = 'WHMCS\Module\Addon\\' . $module->name . '\Client\Extension\ClientAreaExtension';
                         $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\\' . $module->name . '\Client\Util\Translator';
-                        $moduleAddonTranslator = new $moduleAddonTranslatorClass($this->params['locale']);
+                        $moduleAddonTranslator = new $moduleAddonTranslatorClass($this->params['language']);
                         $moduleAddonExtension = new $moduleAddonExtensionClass($this->whmcsRepository, $moduleAddonTranslator, []);
 
                         if (is_callable([$moduleAddonExtension, 'renderDashboardMetric'])) {
@@ -121,21 +121,21 @@ class AbstractClientAreaExtension implements ClientAreaExtensionInterface
             if ($module->name != 'c4a_console' && $module->name != 'c4a_account_manager' && $module->name != 'c4a_domain_manager') {
                 $constantsClass = 'WHMCS\Module\Addon\\'.$module->name.'\Constants';
                 $productSlug = $constantsClass::PROVISIONING_ALGORITHM_NAME;
-                $hostings = Capsule::select('select * from tblhosting as hosting join tblproducts as product on hosting.packageid = product.id where hosting.userid = ? and product.slug = ?', [$this->params['userId'], $productSlug]);
+                $hostings = Capsule::select('select * from tblhosting as hosting join tblproducts as product on hosting.packageid = product.id where hosting.userid = ? and product.slug = ?', [$this->params['uid'], $productSlug]);
             }
             
             if ($module->name == 'c4a_account_manager') {
-                $hostings = Capsule::select('select * from tblhosting as hosting join tblproducts as product on hosting.packageid = product.id where hosting.userid = ?', [$this->params['userId']]);
+                $hostings = Capsule::select('select * from tblhosting as hosting join tblproducts as product on hosting.packageid = product.id where hosting.userid = ?', [$this->params['uid']]);
             }
 
             if ($module->name == 'c4a_domain_manager') {
-                $hostings = Capsule::table('tbldomains')->where('userid', $this->params['userId'])->get();
+                $hostings = Capsule::table('tbldomains')->where('userid', $this->params['uid'])->get();
             }
 
             if ($hostings || $module->name == 'c4a_console') {
                 $moduleAddonExtensionClass = 'WHMCS\Module\Addon\\' . $module->name . '\Client\Extension\ClientAreaExtension';
                 $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\\' . $module->name . '\Client\Util\Translator';
-                $moduleAddonTranslator = new $moduleAddonTranslatorClass($this->params['locale']);
+                $moduleAddonTranslator = new $moduleAddonTranslatorClass($this->params['language']);
                 $moduleAddonExtension = new $moduleAddonExtensionClass($this->whmcsRepository, $moduleAddonTranslator, []);
             
                 if (is_callable(array($moduleAddonExtension, 'renderSidebarItem'))) {
@@ -184,7 +184,7 @@ class AbstractClientAreaExtension implements ClientAreaExtensionInterface
             if ($module->name != 'c4a_console' && $module->name != 'c4a_account_manager' && $module->name != 'c4a_domain_manager') {
                 $constantsClass = 'WHMCS\Module\Addon\\'.$module->name.'\Constants';
                 $productSlug = $constantsClass::PROVISIONING_ALGORITHM_NAME;
-                $hostings = Capsule::select('select * from tblhosting as hosting join tblproducts as product on hosting.packageid = product.id where hosting.userid = ? and product.slug = ?', [$this->params['userId'], $productSlug]);
+                $hostings = Capsule::select('select * from tblhosting as hosting join tblproducts as product on hosting.packageid = product.id where hosting.userid = ? and product.slug = ?', [$this->params['uid'], $productSlug]);
             } 
             
             if ($module->name == 'c4a_account_manager') {
@@ -192,13 +192,13 @@ class AbstractClientAreaExtension implements ClientAreaExtensionInterface
             }
 
             if ($module->name == 'c4a_domain_manager') {
-                $hostings = Capsule::table('tbldomains')->where('userid', $this->params['userId'])->get();
+                $hostings = Capsule::table('tbldomains')->where('userid', $this->params['uid'])->get();
             }
 
             if ($hostings || $module->name == 'c4a_console') {
                 $moduleAddonExtensionClass = 'WHMCS\Module\Addon\\' . $module->name . '\Client\Extension\ClientAreaExtension';
                 $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\\' . $module->name . '\Client\Util\Translator';
-                $moduleAddonTranslator = new $moduleAddonTranslatorClass($this->params['locale']);
+                $moduleAddonTranslator = new $moduleAddonTranslatorClass($this->params['language']);
                 $moduleAddonExtension = new $moduleAddonExtensionClass($this->whmcsRepository, $moduleAddonTranslator, $opts);
                 
                 
