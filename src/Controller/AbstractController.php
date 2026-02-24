@@ -21,11 +21,11 @@ abstract class AbstractController implements ControllerInterface
     /** @var TemplateManagerInterface $templateManager **/
     private TemplateManagerInterface $templateManager;
 
-    private $smartyClass;
-
     /**
-     * @param Translator $translator
-     * @param RepositoryInterface $repository
+     * @param TranslatorInterface $translator
+     * @param WhmcsRepositoryInterface $whmcsRepository
+     * @param KarajanClientInterface $karajanClient
+     * @param TemplateManagerInterface $templateManager
      */
     public function __construct(TranslatorInterface $translator, WhmcsRepositoryInterface $whmcsRepository, KarajanClientInterface $karajanClient, TemplateManagerInterface $templateManager)
     {
