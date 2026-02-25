@@ -91,7 +91,7 @@ abstract class AbstractClientDispatcher implements DispatcherInterface
             $serviceIdField = Capsule::table('tblcustomfields')->where('fieldname', 'serviceId')->where('relid', $hosting[0]['packageid'])->get();
             $serviceIdFieldValue = Capsule::table('tblcustomfieldsvalues')
             ->where('fieldid', $serviceIdField[0]->id)
-            ->where('relid', $_GET['id'])
+            ->where('relid', $hostingId)
             ->get()
             ;
             

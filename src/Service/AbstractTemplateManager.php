@@ -2,10 +2,10 @@
 
 namespace WHMCS\Cloud4Africa\Service;
 
-use WHMCS\Cloud4Africa\DTO;
+use WHMCS\Cloud4Africa\DTO\Template;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
-abstract class AbstractTemplateManager extends TemplateManagerInterface
+abstract class AbstractTemplateManager implements TemplateManagerInterface
 {
     public function __invoke(Capsule $capsule, string $tableName, string $action): ?Template
     {
