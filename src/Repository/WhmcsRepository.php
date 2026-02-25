@@ -3,73 +3,93 @@
 namespace WHMCS\Cloud4Africa\Repository;
 
 use WHMCS\Cloud4Africa\Service\WhmcsLocalApiInterface;
-use WHMCS\Database\Capsule;
+use Illuminate\Database\Capsule\Manager as Capsule;
 
 class WhmcsRepository implements WhmcsRepositoryInterface
 {
     private WhmcsLocalApiInterface $api;
-
-    public function __construct(WhmcsLocalApiInterface $api)
+    
+    private Capsule $capsule;
+    
+    public function __construct(WhmcsLocalApiInterface $api, Capsule $capsule)
     {
         $this->api = $api;
+        $this->capsule = $capsule;
     }
-
+    
+    public function select(string $sql, array $parameters = []): array
+    {
+        return $this->capsule->connection()->select($sql, $parameters);
+    }
+    
+    public function count(string $sql, array $parameters = []): int
+    {
+        $results =$this->capsule->connection()->select($sql, $parameters);
+        return (int) ($results[0]->count ?? 0);
+    }
+    
+    public function exists(string $sql, array $parameters = []): bool
+    {
+        $results = $this->capsule->connection()->select($sql, $parameters);
+        return !empty($results);
+    }
+    
     public function getRawProducts(): array
     {
-        return Capsule::connection()->select(
+        return $this->capsule->connection()->select(
             'SELECT * FROM tblproducts'
-        );
+            );
     }
-
-   public function getRawProduct(int $productId): array
+    
+    public function getRawProduct(int $productId): array
     {
-        return Capsule::connection()->select(
+        return $this->capsule->connection()->select(
             'SELECT * FROM tblproducts WHERE id = ?',
             [$productId]
-        );
+            );
     }
-
+    
     public function countClientProductsByServerType(int $clientId, string $serverType): int
     {
-        results = Capsule::connection()->select(
+        $results = $this->capsule->connection()->select(
             "SELECT COUNT(DISTINCT hosting.id) as count
              FROM tblhosting AS hosting
              JOIN tblproducts AS product
              ON product.id = hosting.packageid
              WHERE product.servertype = ? AND hosting.userid = ?",
             [$serverType, $clientId]
-        );
-
+            );
+        
         return (int) ($results[0]->count ?? 0);
     }
-
+    
     public function getClientProductsByServerType(int $clientId, string $serverType): array
     {
-        return Capsule::connection()->select(
+        return $this->capsule->connection()->select(
             "SELECT hosting.id, hosting.domain, hosting.domainstatus as status, product.name
              FROM tblhosting AS hosting
              JOIN tblproducts AS product
              ON product.id = hosting.packageid
              WHERE product.servertype = ? AND hosting.userid = ?",
             [$serverType, $clientId]
-        );
+            );
     }
-
+    
     public function getClientProductByServerType(int $clientId, int $productId, string $serverType): array
     {
-        return Capsule::connection()->select(
+        return $this->capsule->connection()->select(
             "SELECT hosting.id, hosting.domain, hosting.domainstatus as status, product.name
              FROM tblhosting AS hosting
              JOIN tblproducts AS product
              ON product.id = hosting.packageid
              WHERE product.servertype = ? AND hosting.userid = ? AND hosting.id = ?",
             [$serverType, $clientId, $productId]
-        );
+            );
     }
-
+    
     public function countClientProductsBySlug(int $clientId, string $slug): int
     {
-        $results = Capsule::connection()->select(
+        $results = $this->capsule->connection()->select(
             "SELECT COUNT(DISTINCT hosting.id) as count
              FROM tblhosting AS hosting
              JOIN tblproducts AS product
@@ -78,14 +98,14 @@ class WhmcsRepository implements WhmcsRepositoryInterface
              ON server.type = product.servertype
              WHERE product.slug = ? AND hosting.userid = ?",
             [$slug, $clientId]
-        );
-
+            );
+        
         return (int) ($results[0]->count ?? 0);
     }
-
+    
     public function getClientProductsBySlug(int $clientId, string $slug): array
     {
-        return Capsule::connection()->select(
+        return $this->capsule->connection()->select(
             "SELECT hosting.id as id,
                     hosting.created_at as created_at,
                     hosting.regdate as regdate,
@@ -109,12 +129,12 @@ class WhmcsRepository implements WhmcsRepositoryInterface
                AND hosting.userid = ?
                AND customfield.fieldname = ?",
             [$slug, $clientId, 'internalStatus']
-        );
+            );
     }
-
+    
     public function getClientProductBySlug(int $clientId, int $hostingId, string $slug): array
     {
-        return Capsule::connection()->select(
+        return $this->capsule->connection()->select(
             "SELECT hosting.id as id,
                     hosting.created_at as created_at,
                     hosting.regdate as regdate,
@@ -146,12 +166,12 @@ class WhmcsRepository implements WhmcsRepositoryInterface
                AND hosting.id = ?
                AND customfield.fieldname = ?",
             [$slug, $clientId, $hostingId, 'internalStatus']
-        );
+            );
     }
-
+    
     public function getClientProductCustomFieldData(int $productId): array
     {
-        return Capsule::connection()->select(
+        return $this->capsule->connection()->select(
             "SELECT customfieldvalue.id,
                     customfieldvalue.value,
                     customfield.fieldname
@@ -162,27 +182,27 @@ class WhmcsRepository implements WhmcsRepositoryInterface
                 ON customfield.id = customfieldvalue.fieldid
              WHERE hosting.id = ?",
             [$productId]
-        );
+            );
     }
-
+    
     public function countClientProductAddons(int $clientId): int
     {
-        $results = Capsule::connection()->select(
+        $results = $this->capsule->connection()->select(
             "SELECT COUNT(DISTINCT hostingaddon.id) as count
              FROM tblhostingaddons AS hostingaddon
              JOIN tbladdons AS addon
                 ON addon.id = hostingaddon.addonid
              WHERE hostingaddon.userid = ?",
             [$clientId]
-        );
-
+            );
+        
         return (int) ($results[0]->count ?? 0);
     }
-
-
+    
+    
     public function getClientProductAddons(int $clientId): array
     {
-        return Capsule::connection()->select(
+        return $this->capsule->connection()->select(
             "SELECT hostingaddon.id as id,
                     hostingaddon.hostingid as hosting_id,
                     hostingaddon.created_at as created_at,
@@ -201,12 +221,12 @@ class WhmcsRepository implements WhmcsRepositoryInterface
              WHERE hosting.userid = ?
                AND customfield.fieldname = ?",
             [$clientId, 'internalStatus']
-        );
+            );
     }
-
+    
     public function getClientProductAddon(int $clientId, int $hostingAddonId): array
     {
-        return Capsule::connection()->select(
+        return $this->capsule->connection()->select(
             "SELECT hostingaddon.id as id,
                     hostingaddon.created_at as created_at,
                     hostingaddon.status as status,
@@ -225,12 +245,12 @@ class WhmcsRepository implements WhmcsRepositoryInterface
                AND hostingaddon.id = ?
                AND customfield.fieldname = ?",
             [$clientId, $hostingAddonId, 'internalStatus']
-        );
+            );
     }
-
+    
     public function getClientProductAddonCustomFieldData(int $productId): array
     {
-        return Capsule::connection()->select(
+        return $this->capsule->connection()->select(
             "SELECT customfieldvalue.id,
                     customfieldvalue.value,
                     customfield.fieldname
@@ -241,12 +261,12 @@ class WhmcsRepository implements WhmcsRepositoryInterface
                 ON customfield.id = customfieldvalue.fieldid
              WHERE hostingaddon.id = ?",
             [$productId]
-        );
+            );
     }
-
+    
     public function getCustomFieldValuesByType(string $type): array
     {
-        return Capsule::connection()->select(
+        return $this->capsule->connection()->select(
             "SELECT customfieldvalue.id as id,
                     customfieldvalue.value as value,
                     customfield.fieldname as field_name,
@@ -256,12 +276,12 @@ class WhmcsRepository implements WhmcsRepositoryInterface
                 ON customfield.id = customfieldvalue.fieldid
              WHERE customfield.type = ?",
             [$type]
-        );
+            );
     }
-
+    
     public function getCustomFieldValuesByTypeAndFieldName(string $type, string $fieldName): array
     {
-        return Capsule::connection()->select(
+        return $this->capsule->connection()->select(
             "SELECT customfieldvalue.id as id,
                     customfieldvalue.value as value,
                     customfield.fieldname as field_name,
@@ -272,12 +292,12 @@ class WhmcsRepository implements WhmcsRepositoryInterface
              WHERE customfield.type = ?
                AND customfield.fieldname = ?",
             [$type, $fieldName]
-        );
+            );
     }
-
+    
     public function getClientProductRegion(int $productId): array
     {
-        return Capsule::connection()->select(
+        return $this->capsule->connection()->select(
             "SELECT productconfigoptionssub.optionname
              FROM tblhosting AS hosting
              JOIN tblhostingconfigoptions AS hostingconfigoption
@@ -290,9 +310,9 @@ class WhmcsRepository implements WhmcsRepositoryInterface
                AND productconfigoptions.optiontype = 1
              WHERE hosting.id = ?",
             [$productId]
-        );
+            );
     }
-
+    
     public function getClientDomains(int $clientId): array
     {
         return $this->api->call('GetClientsDomains', [
@@ -300,103 +320,103 @@ class WhmcsRepository implements WhmcsRepositoryInterface
             'stats' => true,
         ]);
     }
-
-
+    
+    
     public function getClientDomain(int $clientId, string $domainName): ?array
     {
         $results = $this->api->call('GetClientsDomains', [
             'clientid' => $clientId,
             'stats' => true,
         ]);
-
+        
         if (($results['totalresults'] ?? 0) > 0) {
             $domains = $results['domains']['domain'] ?? [];
-
+            
             foreach ($domains as $domain) {
                 if (($domain['domainname'] ?? '') === $domainName) {
                     return $domain;
                 }
             }
         }
-
+        
         return null;
     }
-
-
+    
+    
     public function getClientActiveDomains(int $clientId): array
     {
         $results = $this->api->call('GetClientsDomains', [
             'clientid' => $clientId,
             'stats' => true,
         ]);
-
+        
         $response = [];
-
+        
         if (($results['totalresults'] ?? 0) > 0) {
             $domains = $results['domains']['domain'] ?? [];
-
+            
             foreach ($domains as $domain) {
                 if (($domain['status'] ?? '') === 'Active') {
                     $response[] = $domain;
                 }
             }
         }
-
+        
         return $response;
     }
-
+    
     public function getClientPendingDomains(int $clientId): array
     {
         $results = $this->api->call('GetClientsDomains', [
             'clientid' => $clientId,
             'stats' => true,
         ]);
-
+        
         $response = [];
-
+        
         if (($results['totalresults'] ?? 0) > 0) {
             $domains = $results['domains']['domain'] ?? [];
-
+            
             foreach ($domains as $domain) {
                 if (($domain['status'] ?? '') === 'Pending') {
                     $response[] = $domain;
                 }
             }
         }
-
+        
         return $response;
     }
-
+    
     public function getClientExpiredDomains(int $clientId): array
     {
         $results = $this->api->call('GetClientsDomains', [
             'clientid' => $clientId,
             'stats' => true,
         ]);
-
+        
         $response = [];
         $today = new \DateTimeImmutable();
-
+        
         if (($results['totalresults'] ?? 0) > 0) {
             $domains = $results['domains']['domain'] ?? [];
-
+            
             foreach ($domains as $domain) {
                 $status = $domain['status'] ?? '';
                 $expiryDate = $domain['expirydate'] ?? null;
-
+                
                 if (
                     $expiryDate !== null &&
                     !in_array($status, ['Active', 'Pending'], true) &&
                     new \DateTimeImmutable($expiryDate) < $today
-                ) {
-                    $response[] = $domain;
-                }
+                    ) {
+                        $response[] = $domain;
+                    }
             }
         }
-
+        
         return $response;
     }
-
+    
     public function getClientProducts(int $clientId): array
     {
         return $this->api->call('GetClientsProducts', [
@@ -404,7 +424,7 @@ class WhmcsRepository implements WhmcsRepositoryInterface
             'stats' => true,
         ]);
     }
-
+    
     public function getClientProductById(int $clientId, int $productId): array
     {
         return $this->api->call('GetClientsProducts', [
@@ -413,7 +433,7 @@ class WhmcsRepository implements WhmcsRepositoryInterface
             'stats' => true,
         ]);
     }
-
+    
     public function getClientProductByServiceId(int $clientId, int $serviceId): array
     {
         return $this->api->call('GetClientsProducts', [
@@ -422,7 +442,7 @@ class WhmcsRepository implements WhmcsRepositoryInterface
             'stats' => true,
         ]);
     }
-
+    
     public function getClientProductByDomain(int $clientId, string $domain): ?array
     {
         $response = $this->api->call('GetClientsProducts', [
@@ -430,14 +450,14 @@ class WhmcsRepository implements WhmcsRepositoryInterface
             'domain' => $domain,
             'stats' => true,
         ]);
-
+        
         if (($response['totalresults'] ?? 0) > 0) {
             return $response['products']['product'][0] ?? null;
         }
-
+        
         return null;
     }
-
+    
     public function getClientDetails(int $clientId): array
     {
         return $this->api->call('GetClientsDetails', [
@@ -445,8 +465,8 @@ class WhmcsRepository implements WhmcsRepositoryInterface
             'stats' => true,
         ]);
     }
-
-    public function getDomainWhois($domain)
+    
+    public function getDomainWhois($domain): array
     {
         return $this->api->call('DomainWhois', [
             'domain' => $domain,

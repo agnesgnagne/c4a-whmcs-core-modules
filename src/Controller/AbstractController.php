@@ -10,16 +10,16 @@ use WHMCS\Cloud4Africa\Service\TemplateManagerInterface;
 abstract class AbstractController implements ControllerInterface
 {
     /** @var TranslatorInterface $translator **/
-    private $translator;
+    protected $translator;
 
     /** @var WhmcsRepositoryInterface $whmcsRepository **/
-    private WhmcsRepositoryInterface $whmcsRepository;
+    protected WhmcsRepositoryInterface $whmcsRepository;
 
     /** @var KarajanClientInterface $karajanClient **/
-    private KarajanClientInterface $karajanClient;
+    protected KarajanClientInterface $karajanClient;
 
     /** @var TemplateManagerInterface $templateManager **/
-    private TemplateManagerInterface $templateManager;
+    protected TemplateManagerInterface $templateManager;
 
     /**
      * @param TranslatorInterface $translator

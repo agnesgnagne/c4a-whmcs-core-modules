@@ -11,54 +11,64 @@ use WHMCS\View\Menu\Item as MenuItem;
 abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterface
 {
     /** @var Translator $translator **/
-    private $translator;
+    protected $translator;
     
     /** @var WhmcsRepositoryInterface $whmcsRepository **/
-    private WhmcsRepositoryInterface $whmcsRepository;
+    protected WhmcsRepositoryInterface $whmcsRepository;
+    
+    /** @var array $moduleAddonItems **/
+    protected array $moduleAddonItems;
 
-    /** @var array $params **/
-    private array $params;
-
-    public function __construct(WhmcsRepositoryInterface $whmcsRepository, TranslatorInterface $translator, array $params)
+    public function __construct(WhmcsRepositoryInterface $whmcsRepository, TranslatorInterface $translator, array $moduleAddonItems)
     {
-        $this->params = $params;
         $this->whmcsRepository = $whmcsRepository;
         $this->translator = $translator;
+        $this->moduleAddonItems = $moduleAddonItems;
     }
 
-    public function renderSidebarItem(string $currentLink): array
+    public function renderSidebarItem(int $userId, string $currentLink, string $language = 'french'): array
     {}
 
-    public function renderDashboardMetricItem(): array
+    public function renderDashboardMetricItem(int $userId, string $currentLink, string $language = 'french'): array
     {}
 
-    public function renderSidebarItems(string $currentLink): array
+    public function renderSidebarItems(int $userId, string $currentLink, string $language = 'french'): array
     {
-        $this->initializeModuleAddonTable();
-
         $sidebarItems = [];
-
-        foreach (Capsule::table('mod_c4a_addons')->orderBy('position', 'asc')->get() as $module) {
-            $hostings = null;
-
-            if ($module->name != 'c4a_console' && $module->name != 'c4a_account_manager' && $module->name != 'c4a_domain_manager') {
-                $constantsClass = 'WHMCS\Module\Addon\\' . $module->name . '\Constants';
-                $productSlug = $constantsClass::PROVISIONING_ALGORITHM_NAME;
-                $hostings = Capsule::select('select * from tblhosting as hosting join tblproducts as product on hosting.packageid = product.id where hosting.userid = ? and product.slug = ?', [$this->params['uid'], $productSlug]);
+        foreach ($this->moduleAddonItems as $moduleAddonItem) {
+            $hasHostingsorDomains = true;
+            
+            if ($moduleAddonItem['name'] != 'c4a_console' && $moduleAddonItem['name'] != 'c4a_account_manager' && $moduleAddonItem['name'] != 'c4a_domain_manager') {
+                $constantsClass = 'WHMCS\Module\Addon\\' . $moduleAddonItem['name'] . '\Constants';
+                $hasHostingsorDomains = $this->whmcsRepository->exists(
+                    "SELECT COUNT(*) as count
+                     FROM tblhosting AS hosting
+                     JOIN tblproducts AS product
+                       ON product.id = hosting.packageid
+                     WHERE product.slug = ?
+                       AND hosting.userid = ?",
+                    [$constantsClass::PROVISIONING_ALGORITHM_NAME, $userId]
+                );
             }
 
-            if ($module->name == 'c4a_domain_manager') {
-                $hostings = Capsule::table('tbldomains')->where('userid', $this->params['uid'])->get();
+            if ($moduleAddonItem['name'] == 'c4a_domain_manager') {
+                $hasHostingsorDomains = $this->whmcsRepository->exists(
+                    "SELECT 1
+                     FROM tbldomains
+                     WHERE userid = ?
+                     LIMIT 1",
+                    [$userId]
+                );
             }
 
-            if ($hostings || $module->name === 'c4a_console' || $module->name === 'c4a_account_manager') {
-                $moduleAddonExtensionClass = 'WHMCS\Module\Addon\\' . $module->name . '\Client\Extension\ClientAreaExtension';
-                $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\\' . $module->name . '\Client\Util\Translator';
-                $moduleAddonTranslator = new $moduleAddonTranslatorClass($this->params['language']);
+            if ($hasHostingsorDomains || $moduleAddonItem['name'] === 'c4a_console' || $moduleAddonItem['name'] === 'c4a_account_manager') {
+                $moduleAddonExtensionClass = 'WHMCS\Module\Addon\\' . $moduleAddonItem['name'] . '\Client\Extension\ClientAreaExtension';
+                $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\\' . $moduleAddonItem['name'] . '\Client\Translation\Translator';
+                $moduleAddonTranslator = new $moduleAddonTranslatorClass($language);
                 $moduleAddonExtension = new $moduleAddonExtensionClass($this->whmcsRepository, $moduleAddonTranslator, []);
 
                 if (is_callable([$moduleAddonExtension, 'renderSidebarItem'])) {
-                    if ($sidebarItem = $moduleAddonExtension->renderSidebarItem($currentLink)) {
+                    if ($sidebarItem = $moduleAddonExtension->renderSidebarItem($userId, $currentLink, $language)) {
                         $sidebarItems[] = $sidebarItem;
                     }
                 }
@@ -68,29 +78,42 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
         return $sidebarItems;
     }
 
-    public function renderDashboardMetrics(): array
+    public function renderDashboardMetrics(int $userId, string $currentLink, string $language = 'french'): array
     {
-        $this->initializeModuleAddonTable();
-
         $metrics = [];
 
-        foreach (Capsule::table('mod_c4a_addons')->orderBy('position', 'asc')->get() as $module) {
-            if ($module->name != 'c4a_console' && $module->name != 'c4a_account_manager') {
-                if ($module->name == 'c4a_domain_manager') {
-                    $hostings = Capsule::table('tbldomains')->where('userid', $this->params['uid'])->get();
+        foreach ($this->moduleAddonItems as $moduleAddonItem) {
+            if ($moduleAddonItem['name'] != 'c4a_console' && $moduleAddonItem['name'] != 'c4a_account_manager') {
+                $hasHostingsorDomains = true;
+                
+                if ($moduleAddonItem['name'] == 'c4a_domain_manager') {
+                    $hasHostingsorDomains = $this->whmcsRepository->exists(
+                        "SELECT 1
+                         FROM tbldomains
+                         WHERE userid = ?
+                         LIMIT 1",
+                        [$userId]
+                    );
                 } else {
-                    $constantsClass = 'WHMCS\Module\Addon\\' . $module->name . '\Constants';
-                    $productSlug = $constantsClass::PROVISIONING_ALGORITHM_NAME;
-                    $hostings = Capsule::select('select * from tblhosting as hosting join tblproducts as product on hosting.packageid = product.id where hosting.userid = ? and product.slug = ?', [$this->params['uid'], $productSlug]);
-
-                    if ($hostings) {
-                        $moduleAddonExtensionClass = 'WHMCS\Module\Addon\\' . $module->name . '\Client\Extension\ClientAreaExtension';
-                        $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\\' . $module->name . '\Client\Util\Translator';
-                        $moduleAddonTranslator = new $moduleAddonTranslatorClass($this->params['language']);
+                    $constantsClass = 'WHMCS\Module\Addon\\' . $moduleAddonItem['name'] . '\Constants';
+                    $hasHostingsorDomains = $this->whmcsRepository->exists(
+                        "SELECT COUNT(*) as count
+                         FROM tblhosting AS hosting
+                         JOIN tblproducts AS product
+                           ON product.id = hosting.packageid
+                         WHERE product.slug = ?
+                           AND hosting.userid = ?",
+                        [$constantsClass::PROVISIONING_ALGORITHM_NAME, $userId]
+                    );
+                    
+                    if ($hasHostingsorDomains) {
+                        $moduleAddonExtensionClass = 'WHMCS\Module\Addon\\' . $moduleAddonItem['name'] . '\Client\Extension\ClientAreaExtension';
+                        $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\\' . $moduleAddonItem['name'] . '\Client\Translation\Translator';
+                        $moduleAddonTranslator = new $moduleAddonTranslatorClass($language);
                         $moduleAddonExtension = new $moduleAddonExtensionClass($this->whmcsRepository, $moduleAddonTranslator, []);
 
-                        if (is_callable([$moduleAddonExtension, 'renderDashboardMetric'])) {
-                            if ($metric = $moduleAddonExtension->renderDashboardMetric()) {
+                        if (is_callable([$moduleAddonExtension, 'renderDashboardMetricItem'])) {
+                            if ($metric = $moduleAddonExtension->renderDashboardMetricItem($userId, $currentLink, $language)) {
                                 $metrics[] = $metric;
                             }
                         }
@@ -102,10 +125,8 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
         return $metrics;
     }
 
-    public function buildPrimaryNavbar(): void
+    public function buildPrimaryNavbar(int $userId, string $currentLink, string $language = 'french'): void
     {
-        $this->initializeModuleAddonTable();
-
         // Get the current navigation bars.
         $primaryNavbar = Menu::primaryNavbar();
         $primaryNavbar->addChild('mod_c4a_addons')
@@ -115,35 +136,55 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
 
         $c4aAddonModulesMenuItem = $primaryNavbar->getChild('mod_c4a_addons');
         
-        foreach (Capsule::table('mod_c4a_addons')->orderBy('position', 'asc')->get() as $module) {
-            $hostings = null;
+        foreach ($this->moduleAddonItems as $moduleAddonItem) {
+            $hasHostingsorDomains = true;
 
-            if ($module->name != 'c4a_console' && $module->name != 'c4a_account_manager' && $module->name != 'c4a_domain_manager') {
-                $constantsClass = 'WHMCS\Module\Addon\\'.$module->name.'\Constants';
-                $productSlug = $constantsClass::PROVISIONING_ALGORITHM_NAME;
-                $hostings = Capsule::select('select * from tblhosting as hosting join tblproducts as product on hosting.packageid = product.id where hosting.userid = ? and product.slug = ?', [$this->params['uid'], $productSlug]);
+            if ($moduleAddonItem['name'] != 'c4a_console' && $moduleAddonItem['name'] != 'c4a_account_manager' && $moduleAddonItem['name'] != 'c4a_domain_manager') {
+                $constantsClass = 'WHMCS\Module\Addon\\'.$moduleAddonItem['name'].'\Constants';
+                $hasHostingsorDomains = $this->whmcsRepository->exists(
+                    "SELECT COUNT(*) as count
+                     FROM tblhosting AS hosting
+                     JOIN tblproducts AS product
+                       ON product.id = hosting.packageid
+                     WHERE product.slug = ?
+                       AND hosting.userid = ?",
+                    [$constantsClass::PROVISIONING_ALGORITHM_NAME, $userId]
+                );
             }
             
-            if ($module->name == 'c4a_account_manager') {
-                $hostings = Capsule::select('select * from tblhosting as hosting join tblproducts as product on hosting.packageid = product.id where hosting.userid = ?', [$this->params['uid']]);
+            if ($moduleAddonItem['name'] == 'c4a_account_manager') {
+                $hasHostingsorDomains = $this->whmcsRepository->exists(
+                    "SELECT COUNT(*) as count
+                     FROM tblhosting AS hosting
+                     JOIN tblproducts AS product
+                       ON product.id = hosting.packageid
+                     WHERE hosting.userid = ?",
+                    [$userId]
+                );
             }
 
-            if ($module->name == 'c4a_domain_manager') {
-                $hostings = Capsule::table('tbldomains')->where('userid', $this->params['uid'])->get();
+            if ($moduleAddonItem['name'] == 'c4a_domain_manager') {
+                $hasHostingsorDomains = $this->whmcsRepository->exists(
+                    "SELECT 1
+                     FROM tbldomains
+                     WHERE userid = ?
+                     LIMIT 1",
+                    [$userId]
+                );
             }
 
-            if ($hostings || $module->name == 'c4a_console') {
-                $moduleAddonExtensionClass = 'WHMCS\Module\Addon\\' . $module->name . '\Client\Extension\ClientAreaExtension';
-                $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\\' . $module->name . '\Client\Util\Translator';
-                $moduleAddonTranslator = new $moduleAddonTranslatorClass($this->params['language']);
+            if ($hasHostingsorDomains || $moduleAddonItem['name'] == 'c4a_console') {
+                $moduleAddonExtensionClass = 'WHMCS\Module\Addon\\' . $moduleAddonItem['name'] . '\Client\Extension\ClientAreaExtension';
+                $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\\' . $moduleAddonItem['name'] . '\Client\Translation\Translator';
+                $moduleAddonTranslator = new $moduleAddonTranslatorClass($language);
                 $moduleAddonExtension = new $moduleAddonExtensionClass($this->whmcsRepository, $moduleAddonTranslator, []);
             
                 if (is_callable(array($moduleAddonExtension, 'renderSidebarItem'))) {
-                    if ($menuItem = $moduleAddonExtension->renderSidebarItem()) {
+                    if ($menuItem = $moduleAddonExtension->renderSidebarItem($userId, $currentLink, $language)) {
                         $c4aAddonModulesMenuItem->addChild($menuItem['link'], array(
                             'label' => $menuItem['name'],
                             'uri' => '/index.php?m='.$menuItem['link'],
-                            'order' => $module->position,
+                            'order' => $moduleAddonItem['position'],
                             'icon' => $menuItem['icon'],
                         ));
                     }
@@ -154,10 +195,8 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
         return;
     }
 
-    public function buildSidebar(): void
+    public function buildSidebar(int $userId, string $currentLink, string $language = 'french'): void
     {
-        $this->initializeModuleAddonTable();
-
         $secondarySidebar->addChild('mod_c4a_addons', array(
             'label' => $this->translator->trans('console'),
             'uri' => '#',
@@ -168,67 +207,69 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
         $c4aAddonModulesPanel = $secondarySidebar->getChild('mod_c4a_addons');
         $c4aAddonModulesPanel->moveToBack();
         
-        $modules = Capsule::table('mod_c4a_addons')->orderBy('position', 'asc')->get();
-            
-        foreach ($modules as $module) {
-            // Get module configurations
+        foreach ($this->moduleAddonItems as $moduleAddonItem) {
             $opts = array();
-            $moduleoptions = select_query('tbladdonmodules', '*', array('module' => $module->name));
+            $moduleOptions = json_decode($this->capsule->table('tbladdonmodules')->where('module', $moduleAddonItem['name'])->get(), true);
             
-            while($m = mysql_fetch_assoc($moduleoptions)){
-                $opts[$m['setting']] = $m['value'];
+            foreach ($moduleOptions as $moduleOption) {
+                $opts[$moduleOption['setting']] = $moduleOption['value'];
             }
 
-            $hostings = null;
+            $hasHostingsorDomains = true;
 
-            if ($module->name != 'c4a_console' && $module->name != 'c4a_account_manager' && $module->name != 'c4a_domain_manager') {
-                $constantsClass = 'WHMCS\Module\Addon\\'.$module->name.'\Constants';
-                $productSlug = $constantsClass::PROVISIONING_ALGORITHM_NAME;
-                $hostings = Capsule::select('select * from tblhosting as hosting join tblproducts as product on hosting.packageid = product.id where hosting.userid = ? and product.slug = ?', [$this->params['uid'], $productSlug]);
+            if ($moduleAddonItem['name'] != 'c4a_console' && $moduleAddonItem['name'] != 'c4a_account_manager' && $moduleAddonItem['name'] != 'c4a_domain_manager') {
+                $constantsClass = 'WHMCS\Module\Addon\\'.$moduleAddonItem['name'].'\Constants';
+                $hasHostingsorDomains = $this->whmcsRepository->exists(
+                    "SELECT COUNT(*) as count
+                     FROM tblhosting AS hosting
+                     JOIN tblproducts AS product
+                       ON product.id = hosting.packageid
+                     WHERE product.slug = ?
+                       AND hosting.userid = ?",
+                    [$constantsClass::PROVISIONING_ALGORITHM_NAME, $userId]
+                );
             } 
             
-            if ($module->name == 'c4a_account_manager') {
-                $hostings = Capsule::select('select * from tblhosting as hosting join tblproducts as product on hosting.packageid = product.id where hosting.userid = ?', [$_SESSION['uid']]);
+            if ($moduleAddonItem['name'] == 'c4a_account_manager') {
+                $hasHostingsorDomains = $this->whmcsRepository->exists(
+                    "SELECT COUNT(*) as count
+                     FROM tblhosting AS hosting
+                     JOIN tblproducts AS product
+                       ON product.id = hosting.packageid
+                     WHERE hosting.userid = ?",
+                    [$userId]
+                );
             }
 
-            if ($module->name == 'c4a_domain_manager') {
-                $hostings = Capsule::table('tbldomains')->where('userid', $this->params['uid'])->get();
+            if ($moduleAddonItem['name'] == 'c4a_domain_manager') {
+                $hasHostingsorDomains = $this->whmcsRepository->exists(
+                    "SELECT 1
+                     FROM tbldomains
+                     WHERE userid = ?
+                     LIMIT 1",
+                    [$userId]
+                );
             }
 
-            if ($hostings || $module->name == 'c4a_console') {
-                $moduleAddonExtensionClass = 'WHMCS\Module\Addon\\' . $module->name . '\Client\Extension\ClientAreaExtension';
-                $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\\' . $module->name . '\Client\Util\Translator';
-                $moduleAddonTranslator = new $moduleAddonTranslatorClass($this->params['language']);
+            if ($hasHostingsorDomains || $moduleAddonItem['name'] == 'c4a_console') {
+                $moduleAddonExtensionClass = 'WHMCS\Module\Addon\\' . $moduleAddonItem['name'] . '\Client\Extension\ClientAreaExtension';
+                $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\\' . $moduleAddonItem['name'] . '\Client\Translation\Translator';
+                $moduleAddonTranslator = new $moduleAddonTranslatorClass($language);
                 $moduleAddonExtension = new $moduleAddonExtensionClass($this->whmcsRepository, $moduleAddonTranslator, $opts);
                 
                 
                 if (is_callable(array($moduleAddonExtension, 'renderSidebarItem'))) {
-                    if ($menuItem = $moduleAddonExtension->renderSidebarItem()) {
+                    if ($menuItem = $moduleAddonExtension->renderSidebarItem($userId, $currentLink, $language)) {
                         $c4aAddonModulesPanel->addChild($menuItem['link'], array(
                             'label' => $menuItem['name'],
                             'uri' => '/index.php?m='.$menuItem['link'],
-                            'order' => $module->position,
+                            'order' => $moduleAddonItem['position'],
                             'icon' => $menuItem['icon'],
                         ));
                         
                     }
                 }
             }
-        }
-
-        return;
-    }
-
-    private function initializeModuleAddonTable()
-    {
-        if (!Capsule::schema()->hasTable('mod_c4a_addons')) {
-            Capsule::schema()->create('mod_c4a_addons', function ($table) {
-                /** @var \Illuminate\Database\Schema\Blueprint $table */
-                $table->increments('id');
-                $table->text('name');
-                $table->integer('position');
-                $table->json('options')->nullable();
-            });
         }
 
         return;

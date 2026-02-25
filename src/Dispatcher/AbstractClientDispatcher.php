@@ -19,22 +19,22 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 abstract class AbstractClientDispatcher implements DispatcherInterface
 {
     /** @var Translator $translator **/
-    private $translator;
+    protected $translator;
     
     /** @var WhmcsRepositoryInterface $whmcsRepository **/
-    private WhmcsRepositoryInterface $whmcsRepository;
+    protected WhmcsRepositoryInterface $whmcsRepository;
     
     /** @var KarajanClientInterface $karajanClient **/
-    private KarajanClientInterface $karajanClient;
+    protected KarajanClientInterface $karajanClient;
     
     /** @var TemplateManagerInterface $templateManager **/
-    private TemplateManagerInterface $templateManager;
+    protected TemplateManagerInterface $templateManager;
     
     /** @var ControllerInterface $controller **/
-    private ControllerInterface $controller;
+    protected ControllerInterface $controller;
     
     /** @var array $parameters **/
-    private $parameters;
+    protected $parameters;
     
     /**
      * @param Translator $translator
