@@ -35,6 +35,7 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
     public function renderSidebarItems(int $userId, string $currentLink, string $language = 'french'): array
     {
         $sidebarItems = [];
+        
         foreach ($this->moduleAddonItems as $moduleAddonItem) {
             $hasHostingsorDomains = true;
             
@@ -64,7 +65,7 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
             if ($hasHostingsorDomains || $moduleAddonItem['name'] === 'c4a_console' || $moduleAddonItem['name'] === 'c4a_account_manager') {
                 $moduleAddonExtensionClass = 'WHMCS\Module\Addon\\' . $moduleAddonItem['name'] . '\Client\Extension\ClientAreaExtension';
                 $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\\' . $moduleAddonItem['name'] . '\Client\Translation\Translator';
-                $moduleAddonTranslator = new $moduleAddonTranslatorClass($language);
+                $moduleAddonTranslator = new $moduleAddonTranslatorClass($constantsClass::DEFAULT_TRANSLATION_DIR);
                 $moduleAddonExtension = new $moduleAddonExtensionClass($this->whmcsRepository, $moduleAddonTranslator, []);
 
                 if (is_callable([$moduleAddonExtension, 'renderSidebarItem'])) {
@@ -109,7 +110,7 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
                     if ($hasHostingsorDomains) {
                         $moduleAddonExtensionClass = 'WHMCS\Module\Addon\\' . $moduleAddonItem['name'] . '\Client\Extension\ClientAreaExtension';
                         $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\\' . $moduleAddonItem['name'] . '\Client\Translation\Translator';
-                        $moduleAddonTranslator = new $moduleAddonTranslatorClass($language);
+                        $moduleAddonTranslator = new $moduleAddonTranslatorClass($constantsClass::DEFAULT_TRANSLATION_DIR);
                         $moduleAddonExtension = new $moduleAddonExtensionClass($this->whmcsRepository, $moduleAddonTranslator, []);
 
                         if (is_callable([$moduleAddonExtension, 'renderDashboardMetricItem'])) {
@@ -176,7 +177,7 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
             if ($hasHostingsorDomains || $moduleAddonItem['name'] == 'c4a_console') {
                 $moduleAddonExtensionClass = 'WHMCS\Module\Addon\\' . $moduleAddonItem['name'] . '\Client\Extension\ClientAreaExtension';
                 $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\\' . $moduleAddonItem['name'] . '\Client\Translation\Translator';
-                $moduleAddonTranslator = new $moduleAddonTranslatorClass($language);
+                $moduleAddonTranslator = new $moduleAddonTranslatorClass($constantsClass::DEFAULT_TRANSLATION_DIR);
                 $moduleAddonExtension = new $moduleAddonExtensionClass($this->whmcsRepository, $moduleAddonTranslator, []);
             
                 if (is_callable(array($moduleAddonExtension, 'renderSidebarItem'))) {
@@ -254,7 +255,7 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
             if ($hasHostingsorDomains || $moduleAddonItem['name'] == 'c4a_console') {
                 $moduleAddonExtensionClass = 'WHMCS\Module\Addon\\' . $moduleAddonItem['name'] . '\Client\Extension\ClientAreaExtension';
                 $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\\' . $moduleAddonItem['name'] . '\Client\Translation\Translator';
-                $moduleAddonTranslator = new $moduleAddonTranslatorClass($language);
+                $moduleAddonTranslator = new $moduleAddonTranslatorClass($constantsClass::DEFAULT_TRANSLATION_DIR);
                 $moduleAddonExtension = new $moduleAddonExtensionClass($this->whmcsRepository, $moduleAddonTranslator, $opts);
                 
                 
