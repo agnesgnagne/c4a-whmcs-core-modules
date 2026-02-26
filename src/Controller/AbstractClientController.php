@@ -2,12 +2,18 @@
 
 namespace WHMCS\Cloud4Africa\Controller;
 
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\RequestOptions;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Response;
+use WHMCS\Authentication\CurrentUser;
+use WHMCS\ClientArea;
 use WHMCS\Cloud4Africa\Client\KarajanClientInterface;
 use WHMCS\Cloud4Africa\Repository\WhmcsRepositoryInterface;
 use WHMCS\Cloud4Africa\Translation\TranslatorInterface;
 use WHMCS\Cloud4Africa\Service\TemplateManagerInterface;
 
-abstract class AbstractController implements ControllerInterface
+abstract class AbstractClientController implements ControllerInterface
 {
     /** @var TranslatorInterface $translator **/
     protected $translator;
@@ -55,48 +61,57 @@ abstract class AbstractController implements ControllerInterface
     }
     
     /**
-     * @param RequestException $e
-     * @param array<string, mixed> $vars
+     * @param string $template
+     * @param array<string, mixed> $params
      * @return Response
      */
-    protected function getRequestExceptionResponse(RequestException $e, array $vars = []): Response
+    protected function renderCustomTemplate(string $template, array $params): Response
     {
-        $message = null;
-        $statusCode = null;
-
-        unset($vars['accessToken']);
-
-        if ($e->hasResponse()) {
-            $message = $this->extractApiErrorMessage((string) $e->getResponse()->getBody()->getContents());
-            $statusCode = $e->getResponse()->getStatusCode();
-        } else {
-            $message = $e->getMessage() ? $e->getMessage() : $this->translator->trans('mailbox_carbonio.error.default');
-            $statusCode = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
+        require_once __DIR__ . '/../../../../../init.php';
+        
+        $ca = new ClientArea();
+        
+        $ca->setPageTitle($params['pagetitle']);
+        
+        foreach ($params['breadcrumb'] as $page => $title) {
+            $ca->addToBreadCrumb($page, $title);
         }
-        logModuleCall('c4a_mailbox_carbonio', __FUNCTION__, $vars, $message);
-
-        return new Response(
-            $message,
-            $statusCode,
-            ['Content-Type' => false === empty($vars['queryParams']['ajax']) ? 'application/json' : 'text/html']
-        );
+        
+        $ca->initPage();
+        
+        $currentUser = new CurrentUser();
+        $authUser = $currentUser->user();
+        
+        // Check login status
+        if ($authUser) {
+            $ca->assign('userFullname', $authUser->fullName);
+            $selectedClient = $currentUser->client();
+            
+            if ($selectedClient) {
+                $ca->assign('clientInvoiceCount', $selectedClient->invoices()->count());
+            }
+        } else {
+            $ca->assign('userFullname', 'Guest');
+        }
+        
+        foreach ($params['vars'] as $key => $value) {
+            $ca->assign($key, $value);
+        }
+        
+        $ca->setTemplate($template);
+        
+        ob_start();
+        $ca->output();
+        $html = ob_get_clean();
+        
+        return new Response($html ?: '');
     }
     
     /**
-     * @param \Exception $e
-     * @param array<string, mixed> $vars
-     * @return Response
+     * @return string
      */
-    protected function getExceptionResponse(\Exception $e, array $vars = []): Response
+    protected static function getCompileDir(): string
     {
-        unset($vars['accessToken']);
-
-        logModuleCall('c4a_mailbox_carbonio', __FUNCTION__, $vars, $e->getMessage());
-
-        return new Response(
-            $e->getMessage() ? $e->getMessage() : $this->translator->trans('mailbox_carbonio.error.default'),
-            method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500,
-            ['Content-Type' => false === empty($vars['queryParams']['ajax']) ? 'application/json' : 'text/html']
-        );
+        return __DIR__ . '/../../../../../../templates_c';
     }
 }

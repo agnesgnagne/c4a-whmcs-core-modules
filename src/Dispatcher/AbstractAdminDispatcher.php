@@ -14,14 +14,11 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 
 abstract class AbstractAdminDispatcher implements DispatcherInterface
 {
-    /** @var Translator $translator **/
-    protected $translator;
+    /** @var TranslatorInterface $translator **/
+    protected TranslatorInterface $translator;
     
     /** @var WhmcsRepositoryInterface $whmcsRepository **/
     protected WhmcsRepositoryInterface $whmcsRepository;
-    
-    /** @var TemplateManagerInterface $templateManager **/
-    protected TemplateManagerInterface $templateManager;
     
     /** @var ControllerInterface $controller **/
     protected ControllerInterface $controller;
@@ -56,9 +53,10 @@ abstract class AbstractAdminDispatcher implements DispatcherInterface
      *
      * @return Response|string|null
      */
-    public function dispatch(string $action, string ?$hostingId = null): Response|string|null
+    public function dispatch(string $action): Response|string|null
     {
-        $this->parameters = array_merge($this->parameters, $this->buildExtraParameters($hostingId));
+        $this->parameters['translator'] = $this->translator;
+        $this->parameters = array_merge($this->parameters, $this->buildExtraParameters());
         
         $controller = $this->getController($this->translator, $this->whmcsRepository);
         
@@ -74,9 +72,7 @@ abstract class AbstractAdminDispatcher implements DispatcherInterface
     }
     
     public function buildExtraParameters(int ?$hostingId = null): array
-    {
-        return ['translator' => $this->translator];
-    }
+    {}
     
     public function getController(TranslatorInterface $translator, WhmcsRepositoryInterface $whmcsRepository): ControllerInterface
     {}

@@ -2,6 +2,8 @@
 
 namespace WHMCS\Cloud4Africa\Controller;
 
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Response;
 use WHMCS\Cloud4Africa\Repository\WhmcsRepositoryInterface;
 use WHMCS\Cloud4Africa\Translation\TranslatorInterface;
 
@@ -40,51 +42,5 @@ abstract class AbstractAdminController implements ControllerInterface
         $html = $smarty->fetch($template);
 
         return new Response($html);
-    }
-    
-    /**
-     * @param RequestException $e
-     * @param array<string, mixed> $vars
-     * @return Response
-     */
-    protected function getRequestExceptionResponse(RequestException $e, array $vars = []): Response
-    {
-        $message = null;
-        $statusCode = null;
-
-        unset($vars['accessToken']);
-
-        if ($e->hasResponse()) {
-            $message = $this->extractApiErrorMessage((string) $e->getResponse()->getBody()->getContents());
-            $statusCode = $e->getResponse()->getStatusCode();
-        } else {
-            $message = $e->getMessage() ? $e->getMessage() : $this->translator->trans('mailbox_carbonio.error.default');
-            $statusCode = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
-        }
-        logModuleCall('c4a_mailbox_carbonio', __FUNCTION__, $vars, $message);
-
-        return new Response(
-            $message,
-            $statusCode,
-            ['Content-Type' => false === empty($vars['queryParams']['ajax']) ? 'application/json' : 'text/html']
-        );
-    }
-    
-    /**
-     * @param \Exception $e
-     * @param array<string, mixed> $vars
-     * @return Response
-     */
-    protected function getExceptionResponse(\Exception $e, array $vars = []): Response
-    {
-        unset($vars['accessToken']);
-
-        logModuleCall('c4a_mailbox_carbonio', __FUNCTION__, $vars, $e->getMessage());
-
-        return new Response(
-            $e->getMessage() ? $e->getMessage() : $this->translator->trans('mailbox_carbonio.error.default'),
-            method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500,
-            ['Content-Type' => false === empty($vars['queryParams']['ajax']) ? 'application/json' : 'text/html']
-        );
     }
 }

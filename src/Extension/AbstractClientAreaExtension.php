@@ -26,13 +26,13 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
         $this->moduleAddonItems = $moduleAddonItems;
     }
 
-    public function renderSidebarItem(int $userId, string $currentLink, string $language = 'french'): array
+    protected function renderSidebarItem(int $userId, string $currentLink, string $language = 'french'): array
     {}
 
-    public function renderDashboardMetricItem(int $userId, string $currentLink, string $language = 'french'): array
+    protected function renderDashboardMetricItem(int $userId, string $currentLink, string $language = 'french'): array
     {}
 
-    public function renderSidebarItems(int $userId, string $currentLink, string $language = 'french'): array
+    protected function renderSidebarItems(int $userId, string $currentLink, string $language = 'french'): array
     {
         $sidebarItems = [];
         foreach ($this->moduleAddonItems as $moduleAddonItem) {
@@ -78,7 +78,7 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
         return $sidebarItems;
     }
 
-    public function renderDashboardMetrics(int $userId, string $currentLink, string $language = 'french'): array
+    protected function renderDashboardMetrics(int $userId, string $currentLink, string $language = 'french'): array
     {
         $metrics = [];
 
@@ -125,7 +125,7 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
         return $metrics;
     }
 
-    public function buildPrimaryNavbar(int $userId, string $currentLink, string $language = 'french'): void
+    protected function buildPrimaryNavbar(int $userId, string $currentLink, string $language = 'french'): void
     {
         // Get the current navigation bars.
         $primaryNavbar = Menu::primaryNavbar();
@@ -195,7 +195,7 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
         return;
     }
 
-    public function buildSidebar(int $userId, string $currentLink, string $language = 'french'): void
+    protected function buildSidebar(int $userId, string $currentLink, string $language = 'french'): void
     {
         $secondarySidebar->addChild('mod_c4a_addons', array(
             'label' => $this->translator->trans('console'),

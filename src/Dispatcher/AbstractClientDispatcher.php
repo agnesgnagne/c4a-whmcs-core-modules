@@ -18,8 +18,8 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 
 abstract class AbstractClientDispatcher implements DispatcherInterface
 {
-    /** @var Translator $translator **/
-    protected $translator;
+    /** @var TranslatorInterface $translator **/
+    protected TranslatorInterface $translator;
     
     /** @var WhmcsRepositoryInterface $whmcsRepository **/
     protected WhmcsRepositoryInterface $whmcsRepository;
