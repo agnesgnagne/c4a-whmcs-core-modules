@@ -6,7 +6,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 interface DispatcherInterface
 {
-    public function dispatch(string $action, string $hostingId = null): Response|array|null;
+    public function dispatch(string $action, ?int $hostingId = null): Response|array|null;
     
-    public function buildExtraParameters(int $hostingId = null): array;
+    public function buildExtraParameters(?int $hostingId = null): array;
 }

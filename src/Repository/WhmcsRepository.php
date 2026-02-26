@@ -24,7 +24,7 @@ class WhmcsRepository implements WhmcsRepositoryInterface
     
     public function count(string $sql, array $parameters = []): int
     {
-        $results =$this->capsule->connection()->select($sql, $parameters);
+        $results = $this->capsule->connection()->select($sql, $parameters);
         return (int) ($results[0]->count ?? 0);
     }
     

@@ -43,4 +43,12 @@ abstract class AbstractAdminController implements ControllerInterface
 
         return new Response($html);
     }
+    
+    /**
+     * @return string
+     */
+    protected static function getCompileDir(): string
+    {
+        return __DIR__ . '/../../../../../../templates_c';
+    }
 }

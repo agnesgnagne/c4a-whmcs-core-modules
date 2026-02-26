@@ -53,7 +53,7 @@ abstract class AbstractAdminDispatcher implements DispatcherInterface
      *
      * @return Response|string|null
      */
-    public function dispatch(string $action): Response|string|null
+    public function dispatch(string $action, ?int $hostingId = null): Response|array|null
     {
         $this->parameters['translator'] = $this->translator;
         $this->parameters = array_merge($this->parameters, $this->buildExtraParameters());
@@ -63,15 +63,15 @@ abstract class AbstractAdminDispatcher implements DispatcherInterface
         if (is_callable([$controller, $action])) {
             $response = $controller->$action($this->parameters);
             
-            if ($response instanceof Response) {
-                return $response->send();
+            if (! ($response instanceof Response)) {
+                throw new \Exception('Error', 500);
             }
             
             return $response;
         }
     }
     
-    public function buildExtraParameters(int ?$hostingId = null): array
+    public function buildExtraParameters(?int $hostingId = null): array
     {}
     
     public function getController(TranslatorInterface $translator, WhmcsRepositoryInterface $whmcsRepository): ControllerInterface

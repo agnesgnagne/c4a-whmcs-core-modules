@@ -68,7 +68,7 @@ abstract class AbstractClientDispatcher implements DispatcherInterface
      *
      * @return array
      */
-    public function dispatch(string $action, string $hostingId = null): Response|array|null
+    public function dispatch(string $action, ?int $hostingId = null): Response|array|null
     {
         if ($hostingId) {
             $hosting = json_decode(Capsule::table('tblhosting')->where('id', $hostingId)->get(), true);
@@ -90,9 +90,9 @@ abstract class AbstractClientDispatcher implements DispatcherInterface
             
             $serviceIdField = Capsule::table('tblcustomfields')->where('fieldname', 'serviceId')->where('relid', $hosting[0]['packageid'])->get();
             $serviceIdFieldValue = Capsule::table('tblcustomfieldsvalues')
-            ->where('fieldid', $serviceIdField[0]->id)
-            ->where('relid', $hostingId)
-            ->get()
+                                        ->where('fieldid', $serviceIdField[0]->id)
+                                        ->where('relid', $hostingId)
+                                        ->get()
             ;
             
             if (true === empty($serviceIdFieldValue[0]->value)) {
