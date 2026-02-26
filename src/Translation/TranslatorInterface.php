@@ -6,9 +6,9 @@ interface TranslatorInterface
 {
     /**
      * @param string $name
-     * @param string|null $locale
+     * @param string $locale
      * @param array<string, mixed> $parameters
      * @param string|null $translationDir
      */
-    public function trans(string $name, ?string $locale = null, array $parameters = [], ?string $translationDir = null): ?string;
+    public function trans(string $name, string $locale = 'french', array $parameters = []): ?string;
 }

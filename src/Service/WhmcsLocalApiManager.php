@@ -4,7 +4,7 @@ namespace WHMCS\Cloud4Africa\Service;
 
 use WHMCS\Database\Capsule;
 
-class WhmcsLocalApi implements WhmcsLocalApiInterface
+class WhmcsLocalApiManager implements WhmcsLocalApiInterface
 {
     private string $admin;
 

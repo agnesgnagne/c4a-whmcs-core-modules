@@ -116,10 +116,10 @@ abstract class AbstractClientDispatcher implements DispatcherInterface
                     );
             } catch (RequestException $e) {
                 logModuleCall($this->parameters['moduleName'], __FUNCTION__, [], $e->getResponse()->getBody()->getContents());
-                throw new \Exception($this->translator->trans('mailbox_carbonio.error.default'));
+                throw new \Exception($this->translator->trans('client_dispatch.error.default'));
             } catch (\Exception $e) {
                 logModuleCall($this->parameters['moduleName'], __FUNCTION__, [], $e->getMessage());
-                throw new \Exception($this->translator->trans('mailbox_carbonio.error.default'));
+                throw new \Exception($this->translator->trans('client_dispatch.error.default'));
             }
             
             $service = json_decode($response->getBody()->getContents(), true);

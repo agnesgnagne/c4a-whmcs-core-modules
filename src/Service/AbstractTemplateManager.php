@@ -3,27 +3,59 @@
 namespace WHMCS\Cloud4Africa\Service;
 
 use WHMCS\Cloud4Africa\DTO\Template;
-use Illuminate\Database\Capsule\Manager as Capsule;
+use WHMCS\Cloud4Africa\Repository\WhmcsRepositoryInterface;
 
 abstract class AbstractTemplateManager implements TemplateManagerInterface
 {
-    public function __invoke(Capsule $capsule, string $tableName, string $action): ?Template
+    /**
+     * @var WhmcsRepositoryInterface
+     */
+    protected WhmcsRepositoryInterface $whmcsRepository;
+    
+    /**
+     * @var string
+     */
+    protected string $tableName;
+    
+    /**
+     * @var string
+     */
+    protected string $action;
+    
+    /**
+     * @var string
+     */
+    protected string $connectionName;
+    
+    /**
+     * @param WhmcsRepositoryInterface $whmcsRepository
+     * @param string $tableName
+     * @param string $action
+     * @param string $connectionName
+     */
+    public function __construct(WhmcsRepositoryInterface $whmcsRepository, string $tableName, string $action, ?string $connectionName = 'default')
     {
-        return $this->getTemplate($capsule, $tableName, $action);
+        $this->whmcsRepository = $whmcsRepository;
+        $this->tableName = $tableName;
+        $this->action = $action;
+        $this->connectionName = $connectionName;
     }
-
-    public function getTemplate(Capsule $capsule, string $tableName, string $action, string $connectionName = 'default') :?Template
+    
+    public function getTemplate() :?Template
     {
-        $key = $this->resolveKeyByAction($action);
-        $template = $this->capsule->getConnection($connectionName)->table($this->tableName)->where('key', $key)->first();
+        $key = $this->resolveKey();
+        $template = $this->whmcsRepository->select(
+            "SELECT 1
+             FROM $this->tableName
+             WHERE key = ?
+             LIMIT 1",
+            [$key]
+        );
         
-        if (! $template->value) {
+        if (count($template) == 0) {
             return null;
         }
         
-        return new Template(
-            key: $template->key,
-            value: $template->value
-        );
+        return new Template($template['key'], $template['value']);
     }
 }

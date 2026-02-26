@@ -10,7 +10,7 @@ use WHMCS\View\Menu\Item as MenuItem;
 
 abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterface
 {
-    /** @var Translator $translator **/
+    /** @var TranslatorInterface $translator **/
     protected $translator;
     
     /** @var WhmcsRepositoryInterface $whmcsRepository **/
