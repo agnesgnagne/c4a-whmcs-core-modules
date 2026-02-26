@@ -18,6 +18,21 @@ interface WhmcsRepositoryInterface
      * @return bool
      */
     public function exists(string $sql, array $parameters = []): bool;
+
+    /**
+     * @return void
+     */
+    public function insert(string $sql, array $parameters = []): void;
+
+    /**
+     * @return void
+     */
+    public function update(string $sql, array $parameters = []): void;
+
+    /**
+     * @return void
+     */
+    public function delete(string $sql, array $parameters = []): void;
     
     /**
      * @return array<int, \stdClass>

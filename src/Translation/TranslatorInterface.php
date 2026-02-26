@@ -4,5 +4,11 @@ namespace WHMCS\Cloud4Africa\Translation;
 
 interface TranslatorInterface
 {
-    public function trans($name, $locale = null, array $parameters = [], $translationDir = null): ?string;
+    /**
+     * @param string $name
+     * @param string|null $locale
+     * @param array<string, mixed> $parameters
+     * @param string|null $translationDir
+     */
+    public function trans(string $name, ?string $locale = null, array $parameters = [], ?string $translationDir = null): ?string;
 }
