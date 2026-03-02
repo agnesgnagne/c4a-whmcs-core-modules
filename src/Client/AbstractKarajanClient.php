@@ -7,7 +7,6 @@ use GuzzleHttp\Psr7\Response;
 
 abstract class AbstractKarajanClient implements KarajanClientInterface
 {
-
     private string $baseUrl;
 
     public function __construct()

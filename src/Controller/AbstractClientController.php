@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use WHMCS\Authentication\CurrentUser;
 use WHMCS\ClientArea;
-use WHMCS\Cloud4Africa\Client\KarajanClientInterface;
+use WHMCS\Cloud4Africa\Client\KarajanManagerInterface;
 use WHMCS\Cloud4Africa\Repository\WhmcsRepositoryInterface;
 use WHMCS\Cloud4Africa\Translation\TranslatorInterface;
 use WHMCS\Cloud4Africa\Service\TemplateManagerInterface;
@@ -21,8 +21,8 @@ abstract class AbstractClientController implements ControllerInterface
     /** @var WhmcsRepositoryInterface $whmcsRepository **/
     protected WhmcsRepositoryInterface $whmcsRepository;
 
-    /** @var KarajanClientInterface $karajanClient **/
-    protected KarajanClientInterface $karajanClient;
+    /** @var KarajanManagerInterface $karajanManager **/
+    protected KarajanManagerInterface $karajanManager;
 
     /** @var TemplateManagerInterface $templateManager **/
     protected TemplateManagerInterface $templateManager;
@@ -30,15 +30,15 @@ abstract class AbstractClientController implements ControllerInterface
     /**
      * @param TranslatorInterface $translator
      * @param WhmcsRepositoryInterface $whmcsRepository
-     * @param KarajanClientInterface $karajanClient
+     * @param KarajanManagerInterface $karajanManager
      * @param TemplateManagerInterface $templateManager
      */
-    public function __construct(TranslatorInterface $translator, WhmcsRepositoryInterface $whmcsRepository, KarajanClientInterface $karajanClient, TemplateManagerInterface $templateManager)
+    public function __construct(TranslatorInterface $translator, WhmcsRepositoryInterface $whmcsRepository, KarajanManagerInterface $karajanManager, TemplateManagerInterface $templateManager)
     {
         $this->translator = $translator;
         $this->whmcsRepository = $whmcsRepository;
         $this->templateManager = $templateManager;
-        $this->karajanClient = $karajanClient;
+        $this->karajanManager = $karajanManager;
     }
 
     /**
@@ -59,6 +59,68 @@ abstract class AbstractClientController implements ControllerInterface
 
         return new Response($html);
     }
+    
+    /**
+     * @param RequestException $e
+     * @param array<string, mixed> $vars
+     * @return Response
+     */
+    protected function getRequestExceptionResponse(RequestException $e, array $vars = []): Response
+    {
+        $message = null;
+        $statusCode = null;
+        $vars['moduleName'] = 'c4a_mailbox_carbonio';
+        
+        unset($vars['accessToken']);
+        
+        if ($e->hasResponse()) {
+            $decoded = json_decode((string) $e->getResponse()->getBody()->getContents(), true);
+            
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $message = $decoded['message'];
+            }
+            
+            $statusCode = $e->getResponse()->getStatusCode();
+        } else {
+            $message = $this->translator->trans('contoller.error.default');
+            $statusCode = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
+        }
+        logModuleCall($vars['moduleName'], __FUNCTION__, $vars, $message);
+        
+        return new Response(
+            $message,
+            $statusCode,
+            ['Content-Type' => false === empty($vars['queryParams']['ajax']) ? 'application/json' : 'text/html']
+        );
+    }
+    
+    /**
+     * @param \Exception $e
+     * @param array<string, mixed> $vars
+     * @return Response
+     */
+    protected function getExceptionResponse(\Exception $e, array $vars = []): Response
+    {
+        unset($vars['accessToken']);
+        $vars['moduleName'] = 'c4a_mailbox_carbonio';
+        logModuleCall($vars['moduleName'], __FUNCTION__, $vars, $e->getMessage());
+        
+        return new Response(
+            $this->translator->trans('contoller.error.default'),
+            500,
+            ['Content-Type' => false === empty($vars['queryParams']['ajax']) ? 'application/json' : 'text/html']
+        );
+    }
+    
+    /**
+     * @param string $str
+     * @return string
+     */
+    protected function camelCase(string $str): string
+    {
+        return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $str))));
+    }
+    
     
     /**
      * @param string $template

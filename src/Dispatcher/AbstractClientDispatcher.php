@@ -8,7 +8,7 @@ use GuzzleHttp\RequestOptions;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use WHMCS\Cloud4Africa\Client\KarajanClient;
-use WHMCS\Cloud4Africa\Client\KarajanClientInterface;
+use WHMCS\Cloud4Africa\Client\KarajanManagerInterface;
 use WHMCS\Cloud4Africa\Repository\WhmcsLocalApiManager;
 use WHMCS\Cloud4Africa\Repository\WhmcsRepositoryInterface;
 use WHMCS\Cloud4Africa\Translation\TranslatorInterface;
@@ -24,8 +24,8 @@ abstract class AbstractClientDispatcher implements DispatcherInterface
     /** @var WhmcsRepositoryInterface $whmcsRepository **/
     protected WhmcsRepositoryInterface $whmcsRepository;
     
-    /** @var KarajanClientInterface $karajanClient **/
-    protected KarajanClientInterface $karajanClient;
+    /** @var KarajanManagerInterface $karajanManager **/
+    protected KarajanManagerInterface $karajanManager;
     
     /** @var TemplateManagerInterface $templateManager **/
     protected TemplateManagerInterface $templateManager;
@@ -39,14 +39,14 @@ abstract class AbstractClientDispatcher implements DispatcherInterface
     /**
      * @param Translator $translator
      * @param WhmcsRepositoryInterface $whmcsRepository
-     * @param KarajanClientInterface $karajanClient
+     * @param KarajanManagerInterface $karajanManager
      * @param TemplateManager $templateManager
      * @param array $parameters
      */
     public function __construct(
         TranslatorInterface $translator,
         WhmcsRepositoryInterface $whmcsRepository,
-        KarajanClientInterface $karajanClient,
+        KarajanManagerInterface $karajanManager,
         TemplateManagerInterface $templateManager,
         ControllerInterface $controller,
         array $parameters
@@ -54,7 +54,7 @@ abstract class AbstractClientDispatcher implements DispatcherInterface
     {
         $this->translator = $translator;
         $this->whmcsRepository = $whmcsRepository;
-        $this->karajanClient = $karajanClient;
+        $this->karajanManager = $karajanManager;
         $this->templateManager = $templateManager;
         $this->controller = $controller;
         $this->parameters = $parameters;
@@ -100,20 +100,20 @@ abstract class AbstractClientDispatcher implements DispatcherInterface
                 throw new \Exception($this->translator->trans('client_dispatch.error.default'));
             }
             
-            $token = $this->karajanClient->fetchAuthToken();
+            $token = $this->karajanManager->getKarajanClient()->fetchAuthToken();
             
             $this->parameters['accessToken'] = $token['accessToken'];
             
             try {
-                $response = $this->karajanClient->request(
+                $response = $this->karajanManager->getKarajanClient()->request(
                     'GET',
-                    sprintf('%s/orchestrator/v1/rest/services/%s', $this->karajanClient->getBaseUrl(), $serviceIdFieldValue[0]->value),
+                    sprintf('%s/orchestrator/v1/rest/services/%s', $this->karajanManager->getKarajanClient()->getBaseUrl(), $serviceIdFieldValue[0]->value),
                     [
                         RequestOptions::HEADERS => [
                             'Authorization' => sprintf('Bearer %s', $this->parameters['accessToken'])
                         ]
                     ]
-                    );
+                );
             } catch (RequestException $e) {
                 logModuleCall($this->parameters['moduleName'], __FUNCTION__, [], $e->getResponse()->getBody()->getContents());
                 throw new \Exception($this->translator->trans('client_dispatch.error.default'));
@@ -143,7 +143,7 @@ abstract class AbstractClientDispatcher implements DispatcherInterface
         
         $this->parameters = array_merge($this->parameters, $this->buildExtraParameters($hostingId));
         
-        $controller = $this->getController($this->translator, $this->whmcsRepository, $this->karajanClient, $this->templateManager);
+        $controller = $this->getController($this->translator, $this->whmcsRepository, $this->karajanManager, $this->templateManager);
         
         if (is_callable([$controller, $action])) {
             $response = $controller->$action($this->parameters);
@@ -159,6 +159,6 @@ abstract class AbstractClientDispatcher implements DispatcherInterface
     public function buildExtraParameters(int $hostingId = null): array
     {}
     
-    public function getController(TranslatorInterface $translator, WhmcsRepositoryInterface $whmcsRepository, KarajanClientInterface $karajanClient, TemplateManagerInterface $templateManager): ControllerInterface
+    public function getController(TranslatorInterface $translator, WhmcsRepositoryInterface $whmcsRepository, KarajanManagerInterface $karajanManager, TemplateManagerInterface $templateManager): ControllerInterface
     {}
 }
