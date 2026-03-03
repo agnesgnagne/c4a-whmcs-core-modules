@@ -8,10 +8,11 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use WHMCS\Authentication\CurrentUser;
 use WHMCS\ClientArea;
-use WHMCS\Cloud4Africa\Client\KarajanManagerInterface;
+use WHMCS\Cloud4Africa\Service\KarajanManagerInterface;
 use WHMCS\Cloud4Africa\Repository\WhmcsRepositoryInterface;
 use WHMCS\Cloud4Africa\Translation\TranslatorInterface;
 use WHMCS\Cloud4Africa\Service\TemplateManagerInterface;
+use Smarty\Smarty;
 
 abstract class AbstractClientController implements ControllerInterface
 {
@@ -48,7 +49,7 @@ abstract class AbstractClientController implements ControllerInterface
      */
     protected function getResponse(string $template, array $values = []): Response
     {
-        $smarty = new \Smarty();
+        $smarty = new \Smarty\Smarty();
         $smarty->setCompileDir(self::getCompileDir());
 
         foreach ($values as $key => $value) {
@@ -85,7 +86,10 @@ abstract class AbstractClientController implements ControllerInterface
             $message = $this->translator->trans('contoller.error.default');
             $statusCode = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
         }
-        logModuleCall($vars['moduleName'], __FUNCTION__, $vars, $message);
+        
+        if (function_exists('logModuleCall')) {
+            logModuleCall($vars['moduleName'], __FUNCTION__, $vars, $message);
+        }
         
         return new Response(
             $message,
@@ -102,8 +106,10 @@ abstract class AbstractClientController implements ControllerInterface
     protected function getExceptionResponse(\Exception $e, array $vars = []): Response
     {
         unset($vars['accessToken']);
-        $vars['moduleName'] = 'c4a_mailbox_carbonio';
-        logModuleCall($vars['moduleName'], __FUNCTION__, $vars, $e->getMessage());
+        
+        if (function_exists('logModuleCall')) {
+            logModuleCall($vars['moduleName'], __FUNCTION__, $vars, $e->getMessage());
+        }
         
         return new Response(
             $this->translator->trans('contoller.error.default'),

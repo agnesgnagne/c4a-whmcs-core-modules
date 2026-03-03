@@ -33,6 +33,36 @@ class WhmcsRepository implements WhmcsRepositoryInterface
         $results = $this->capsule->connection()->select($sql, $parameters);
         return !empty($results);
     }
+
+    public function insert(string $sql, array $parameters = []): bool
+    {
+        $results = $this->capsule->connection()->select($sql, $parameters);
+        return !empty($results);
+    }
+
+    public function findValidKarajanToken(): array
+    {
+        $now = date('c');
+
+        return $this->capsule->connection()->select(
+            "SELECT *
+            FROM c4a_karajan_token
+            WHERE expires_at > ?
+            LIMIT 1",
+            [$now]
+        );
+    }
+
+    public function findKarajanServer(string $serverType = 'karajan'): array
+    {
+        return $this->capsule->connection()->select(
+            "SELECT *
+            FROM tblservers
+            WHERE type = ?
+            LIMIT 1",
+            [$serverType]
+        );
+    }
     
     public function getRawProducts(): array
     {

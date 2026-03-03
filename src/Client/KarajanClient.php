@@ -12,32 +12,32 @@ class KarajanClient extends AbstractKarajanClient
 {
     public function fetchAuthToken($serverType = 'karajan'): array
     {
-        self::initializeTokenDatabaseSchema();
+        /*self::initializeTokenDatabaseSchema();*/
 
         $translator = new Translator();
-        $now = date('c');
-        $token = Capsule::table('c4a_karajan_token')->where('expires_at', '>', $now)->first();
-        $accessToken = $token->access_token;
-        $projectId = $token->project_id;
+        $token = $this->whmcsRepository->findValidKarajanToken();
+
+        $accessToken = $token['access_token'];
+        $projectId = $token['project_id'];
 
         if (! $accessToken) {
             $httpClient = $this->createClient($serverType);
 
-            $server = json_decode(Capsule::table('tblservers')->where('type', $serverType)->get(), true);
-            $results = localAPI('DecryptPassword', ['password2' => $server[0]['password']]);
+            $server = $this->whmcsRepository->findKarajanServer($serverType);
+            $results = localAPI('DecryptPassword', ['password2' => $server['password']]);
             $password = $results['password'];
 
             try {
                 $response = $httpClient->request('POST', '/identity/v1/rest/auth/tokens', [
                     RequestOptions::HEADERS => [
-                        'X-Application-Id' => $server[0]['accesshash']
+                        'X-Application-Id' => $server['accesshash']
                     ],
                     RequestOptions::JSON => [
                         'identity' => [
                             'methods' => ['password'],
                             'password' => [
                                 'user' => [
-                                    'username' => $server[0]['username'],
+                                    'username' => $server['username'],
                                     'password' => $password
                                 ]
                             ]

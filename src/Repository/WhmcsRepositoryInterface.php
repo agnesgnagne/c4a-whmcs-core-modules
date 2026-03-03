@@ -37,6 +37,16 @@ interface WhmcsRepositoryInterface
     /**
      * @return array<int, \stdClass>
      */
+    public function findValidKarajanToken(): array;
+
+    /**
+     * @return array<int, \stdClass>
+     */
+    public function findKarajanServer(string $serverType = 'karajan'): array;
+    
+    /**
+     * @return array<int, \stdClass>
+     */
     public function getRawProducts(): array;
     
     /**

@@ -4,43 +4,46 @@ namespace WHMCS\Cloud4Africa\Client;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
+use WHMCS\Cloud4Africa\Repository\WhmcsRepositoryInterface;
 
 abstract class AbstractKarajanClient implements KarajanClientInterface
 {
+    /** @var WhmcsRepositoryInterface $whmcsRepository **/
+    protected WhmcsRepositoryInterface $whmcsRepository;
+    
     private string $baseUrl;
-
-    public function __construct()
+    
+    public function __construct(WhmcsRepositoryInterface $whmcsRepository)
     {
-        $server = json_decode(Capsule::table('tblservers')->where('type', $serverType)->get(), true);
-
-        $this->baseUrl = sprintf('%s://%s:%s', $server[0]['secure'] == 'on' ? 'https' : 'http', $server[0]['hostname'], $server[0]['port']);
+        $this->whmcsRepository = $whmcsRepository;
     }
-
+    
     public function createClient(string $serverType = 'karajan', bool $verify = false): Client
     {
         return new Client([
-            'base_uri' => $this->baseUrl,
+            'base_uri' => $this->getBaseUrl(),
             'verify' => $verify
         ]);
     }
-
+    
     public function setBaseUrl(string $baseUrl): AbstractKarajanClient
     {
         $this->baseUrl = $baseUrl;
         return $this;
     }
-
+    
     public function getBaseUrl(): string
     {
-        return $this->baseUrl;
+        $server = $this->whmcsRepository->findKarajanServer();
+        return sprintf('%s://%s:%s', $server['secure'] == 'on' ? 'https' : 'http', $server['hostname'], $server['port']);
     }
-
+    
     public function request(string $method, string $url, array $options = [], string $serverType = 'karajan'): ?Response
     {
-        $httpClient = new Client(['verify' => $verify]);
+        $httpClient = new Client(['verify' => empty($options['verify']) ? $options['verify'] : false]);
         return $httpClient->request($method, $url, $options);
     }
-
+    
     public function fetchAuthToken($serverType = 'karajan'): array
     {}
 }
