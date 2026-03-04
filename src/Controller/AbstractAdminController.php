@@ -6,6 +6,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use WHMCS\Cloud4Africa\Repository\WhmcsRepositoryInterface;
 use WHMCS\Cloud4Africa\Translation\TranslatorInterface;
+use Smarty\Smarty;
 
 abstract class AbstractAdminController implements ControllerInterface
 {
@@ -32,7 +33,7 @@ abstract class AbstractAdminController implements ControllerInterface
      */
     protected function getResponse(string $template, array $values = []): Response
     {
-        $smarty = new \Smarty();
+        $smarty = new Smarty();
         $smarty->setCompileDir(self::getCompileDir());
 
         foreach ($values as $key => $value) {

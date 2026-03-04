@@ -1,6 +1,6 @@
 <?php
 
-namespace WHMCS\Cloud4Africa\Controller;
+namespace WHMCS\Cloud4Africa\Traits;
 
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
@@ -14,7 +14,7 @@ use WHMCS\Cloud4Africa\Translation\TranslatorInterface;
 use WHMCS\Cloud4Africa\Service\TemplateManagerInterface;
 use Smarty\Smarty;
 
-abstract class AbstractClientController implements ControllerInterface
+trait ControllerTrait
 {
     /** @var TranslatorInterface $translator **/
     protected $translator;
@@ -49,7 +49,7 @@ abstract class AbstractClientController implements ControllerInterface
      */
     protected function getResponse(string $template, array $values = []): Response
     {
-        $smarty = new Smarty();
+        $smarty = new \Smarty\Smarty();
         $smarty->setCompileDir(self::getCompileDir());
 
         foreach ($values as $key => $value) {
@@ -174,7 +174,7 @@ abstract class AbstractClientController implements ControllerInterface
         
         return new Response($html ?: '');
     }
-    
+
     /**
      * @return string
      */
