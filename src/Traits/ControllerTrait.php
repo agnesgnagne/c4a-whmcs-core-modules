@@ -16,28 +16,51 @@ use Smarty\Smarty;
 trait ControllerTrait
 {
     /** @var TranslatorInterface $translator **/
-    protected $translator;
+    protected TranslatorInterface $translator;
 
     /** @var WhmcsRepositoryInterface $whmcsRepository **/
     protected WhmcsRepositoryInterface $whmcsRepository;
 
     /** @var TemplateManagerInterface $templateManager **/
     protected TemplateManagerInterface $templateManager;
-
+    
+    /**
+     * @var array
+     */
+    protected array $templateVars;
+    
+    /**
+     * @param array $templateVars
+     * @return array
+     */
+    public function setTemplateVars(array $templateVars): array
+    {
+        return $this->templateVars = $templateVars;
+    }
+    
+    /**
+     * @return array
+     */
+    public function getTemplateVars(): array
+    {
+        return $this->templateVars;
+    }
+    
     /**
      * @param string $template
      * @param array<string, mixed> $values
      * @return Response
      */
-    protected function getResponse(string $template, array $values = []): Response
+    protected function getResponse(string $template, array $values = [], ?string $compilDir = null): Response
     {
         $smarty = new \Smarty\Smarty();
-        $smarty->setCompileDir(self::getCompileDir());
+        $smarty->setCompileDir($compilDir ?: self::getCompileDir());
 
         foreach ($values as $key => $value) {
             $smarty->assign($key, $value);
         }
-
+        
+        $this->setTemplateVars($smarty->getTemplateVars());
         $html = $smarty->fetch($template);
 
         return new Response($html);
@@ -108,7 +131,6 @@ trait ControllerTrait
     {
         return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $str))));
     }
-    
     
     /**
      * @param string $template

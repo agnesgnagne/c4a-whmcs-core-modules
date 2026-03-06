@@ -10,5 +10,5 @@ interface TranslatorInterface
      * @param array<string, mixed> $parameters
      * @param string|null $translationDir
      */
-    public function trans(string $name, string $locale = 'french', array $parameters = []): ?string;
+    public function trans(string $name, string $locale = 'french', array $parameters = []): string|\Exception;
 }
