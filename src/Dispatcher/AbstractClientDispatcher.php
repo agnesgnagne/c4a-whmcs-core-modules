@@ -144,15 +144,13 @@ abstract class AbstractClientDispatcher implements DispatcherInterface
         
         $this->parameters = array_merge($this->parameters, $this->buildExtraParameters($hostingId));
         
-        if (is_callable([$this->controller, $action])) {
-            $response = $this->controller->$action($this->parameters);
-            
-            if ($response instanceof Response) {
-                return $response->send();
-            }
-            
-            return $response;
+        $response = $this->controller->call($action, $this->parameters);
+        
+        if ($response instanceof Response) {
+            return $response->send();
         }
+        
+        return $response;
     }
     
     public function buildExtraParameters(int $hostingId = null): array

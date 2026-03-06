@@ -41,7 +41,7 @@ abstract class AbstractClientController implements ControllerInterface
         $this->templateManager = $templateManager;
         $this->karajanManager = $karajanManager;
     }
-
+  
     /**
      * @param string $template
      * @param array<string, mixed> $values
