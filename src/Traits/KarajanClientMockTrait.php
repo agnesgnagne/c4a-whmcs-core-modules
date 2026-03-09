@@ -1,8 +1,8 @@
 <?php
 
-namespace WHMCS\Module\Addon\Cloud4Africa\Traits;
+namespace WHMCS\Cloud4Africa\Traits;
 
-trait KarajanClientTrait
+trait KarajanClientMockTrait
 {
     use AssertMockTrait;
     use KarajanManagerResponseTrait;

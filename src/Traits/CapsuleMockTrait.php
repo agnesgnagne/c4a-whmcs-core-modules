@@ -1,6 +1,6 @@
 <?php
 
-namespace WHMCS\Module\Addon\Cloud4Africa\Traits;
+namespace WHMCS\Cloud4Africa\Traits;
 
 use Illuminate\Database\Capsule\Manager as Capsule;
 
