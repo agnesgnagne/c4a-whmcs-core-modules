@@ -34,10 +34,28 @@ class WhmcsRepository implements WhmcsRepositoryInterface
         return !empty($results);
     }
 
-    public function insert(string $sql, array $parameters = []): bool
+    public function insert(string $sql, array $parameters = []): void
     {
-        $results = $this->capsule->connection()->select($sql, $parameters);
-        return !empty($results);
+        $this->capsule->connection()->insert($sql, $parameters);
+        return;
+    }
+    
+    /**
+     * @return void
+     */
+    public function update(string $sql, array $parameters = []): void
+    {
+        $this->capsule->connection()->update($sql, $parameters);
+        return;
+    }
+    
+    /**
+     * @return void
+     */
+    public function delete(string $sql, array $parameters = []): void
+    {
+        $this->capsule->connection()->delete($sql, $parameters);
+        return;
     }
 
     public function findValidKarajanToken(): array
