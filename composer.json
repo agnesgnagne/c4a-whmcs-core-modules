@@ -9,8 +9,5 @@
   },
   "require": {
     "symfony/http-foundation": "^6.4"
-  },
-  "require-dev": {
-    "illuminate/database": "^10.0"
   }
 }
