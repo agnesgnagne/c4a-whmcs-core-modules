@@ -53,7 +53,7 @@ trait ControllerTrait
      */
     protected function getResponse(string $template, array $values = [], ?string $compilDir = null): Response
     {
-        $smarty = new \Smarty\Smarty();
+        $smarty = class_exists(Smarty::class) ? new \Smarty\Smarty() : new \Smarty();
         $smarty->setCompileDir($compilDir ?: self::getCompileDir());
 
         foreach ($values as $key => $value) {
