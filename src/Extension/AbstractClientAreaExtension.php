@@ -63,8 +63,8 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
             }
 
             if ($hasHostingsorDomains || $moduleAddonItem['slug'] === 'c4a_console' || $moduleAddonItem['slug'] === 'c4a_account_manager') {
-                $moduleAddonExtensionClass = 'WHMCS\Module\Addon\Cloud4Africa\\' . $moduleAddonItem['name'] . '\Client\Extension\ClientAreaExtension';
-                $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\Cloud4Africa\\' . $moduleAddonItem['name'] . '\Client\Translation\Translator';
+                $moduleAddonExtensionClass = 'WHMCS\Module\Addon\Cloud4Africa\\' . $moduleAddonItem['name'] . '\Extension\ClientAreaExtension';
+                $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\Cloud4Africa\\' . $moduleAddonItem['name'] . '\Translation\Translator';
                 $moduleAddonTranslator = new $moduleAddonTranslatorClass($constantsClass::DEFAULT_TRANSLATION_DIR);
                 $moduleAddonExtension = new $moduleAddonExtensionClass($this->whmcsRepository, $moduleAddonTranslator, []);
 
@@ -108,8 +108,8 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
                     );
                     
                     if ($hasHostingsorDomains) {
-                        $moduleAddonExtensionClass = 'WHMCS\Module\Addon\Cloud4Africa\\' . $moduleAddonItem['name'] . '\Client\Extension\ClientAreaExtension';
-                        $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\Cloud4Africa\\' . $moduleAddonItem['name'] . '\Client\Translation\Translator';
+                        $moduleAddonExtensionClass = 'WHMCS\Module\Addon\Cloud4Africa\\' . $moduleAddonItem['name'] . '\Extension\ClientAreaExtension';
+                        $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\Cloud4Africa\\' . $moduleAddonItem['name'] . '\Translation\Translator';
                         $moduleAddonTranslator = new $moduleAddonTranslatorClass($constantsClass::DEFAULT_TRANSLATION_DIR);
                         $moduleAddonExtension = new $moduleAddonExtensionClass($this->whmcsRepository, $moduleAddonTranslator, []);
 
@@ -175,8 +175,8 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
             }
 
             if ($hasHostingsorDomains || $moduleAddonItem['slug'] == 'c4a_console') {
-                $moduleAddonExtensionClass = 'WHMCS\Module\Addon\Cloud4Africa\\' . $moduleAddonItem['name'] . '\Client\Extension\ClientAreaExtension';
-                $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\Cloud4Africa\\' . $moduleAddonItem['name'] . '\Client\Translation\Translator';
+                $moduleAddonExtensionClass = 'WHMCS\Module\Addon\Cloud4Africa\\' . $moduleAddonItem['name'] . '\Extension\ClientAreaExtension';
+                $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\Cloud4Africa\\' . $moduleAddonItem['name'] . '\Translation\Translator';
                 $moduleAddonTranslator = new $moduleAddonTranslatorClass($constantsClass::DEFAULT_TRANSLATION_DIR);
                 $moduleAddonExtension = new $moduleAddonExtensionClass($this->whmcsRepository, $moduleAddonTranslator, []);
             
@@ -253,8 +253,8 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
             }
 
             if ($hasHostingsorDomains || $moduleAddonItem['slug'] == 'c4a_console') {
-                $moduleAddonExtensionClass = 'WHMCS\Module\Addon\Cloud4Africa\\' . $moduleAddonItem['name'] . '\Client\Extension\ClientAreaExtension';
-                $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\Cloud4Africa\\' . $moduleAddonItem['name'] . '\Client\Translation\Translator';
+                $moduleAddonExtensionClass = 'WHMCS\Module\Addon\Cloud4Africa\\' . $moduleAddonItem['name'] . '\Extension\ClientAreaExtension';
+                $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\Cloud4Africa\\' . $moduleAddonItem['name'] . '\Translation\Translator';
                 $moduleAddonTranslator = new $moduleAddonTranslatorClass($constantsClass::DEFAULT_TRANSLATION_DIR);
                 $moduleAddonExtension = new $moduleAddonExtensionClass($this->whmcsRepository, $moduleAddonTranslator, $opts);
                 
