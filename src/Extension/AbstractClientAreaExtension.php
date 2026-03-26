@@ -39,8 +39,8 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
         foreach ($this->moduleAddonItems as $moduleAddonItem) {
             $hasHostingsorDomains = true;
             
-            if ($moduleAddonItem['name'] != 'c4a_console' && $moduleAddonItem['name'] != 'c4a_account_manager' && $moduleAddonItem['name'] != 'c4a_domain_manager') {
-                $constantsClass = 'WHMCS\Module\Addon\\' . $moduleAddonItem['name'] . '\Constants';
+            if ($moduleAddonItem['slug'] != 'c4a_console' && $moduleAddonItem['slug'] != 'c4a_account_manager' && $moduleAddonItem['slug'] != 'c4a_domain_manager') {
+                $constantsClass = 'WHMCS\Module\Addon\Cloud4Africa\\' . $moduleAddonItem['name'] . '\Constants';
                 $hasHostingsorDomains = $this->whmcsRepository->exists(
                     "SELECT COUNT(*) as count
                      FROM tblhosting AS hosting
@@ -62,9 +62,9 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
                 );
             }
 
-            if ($hasHostingsorDomains || $moduleAddonItem['name'] === 'c4a_console' || $moduleAddonItem['name'] === 'c4a_account_manager') {
-                $moduleAddonExtensionClass = 'WHMCS\Module\Addon\\' . $moduleAddonItem['name'] . '\Client\Extension\ClientAreaExtension';
-                $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\\' . $moduleAddonItem['name'] . '\Client\Translation\Translator';
+            if ($hasHostingsorDomains || $moduleAddonItem['slug'] === 'c4a_console' || $moduleAddonItem['slug'] === 'c4a_account_manager') {
+                $moduleAddonExtensionClass = 'WHMCS\Module\Addon\Cloud4Africa\\' . $moduleAddonItem['name'] . '\Client\Extension\ClientAreaExtension';
+                $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\Cloud4Africa\\' . $moduleAddonItem['name'] . '\Client\Translation\Translator';
                 $moduleAddonTranslator = new $moduleAddonTranslatorClass($constantsClass::DEFAULT_TRANSLATION_DIR);
                 $moduleAddonExtension = new $moduleAddonExtensionClass($this->whmcsRepository, $moduleAddonTranslator, []);
 
@@ -84,7 +84,7 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
         $metrics = [];
 
         foreach ($this->moduleAddonItems as $moduleAddonItem) {
-            if ($moduleAddonItem['name'] != 'c4a_console' && $moduleAddonItem['name'] != 'c4a_account_manager') {
+            if ($moduleAddonItem['slug'] != 'c4a_console' && $moduleAddonItem['slug'] != 'c4a_account_manager') {
                 $hasHostingsorDomains = true;
                 
                 if ($moduleAddonItem['name'] == 'c4a_domain_manager') {
@@ -96,7 +96,7 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
                         [$userId]
                     );
                 } else {
-                    $constantsClass = 'WHMCS\Module\Addon\\' . $moduleAddonItem['name'] . '\Constants';
+                    $constantsClass = 'WHMCS\Module\Addon\Cloud4Africa\\' . $moduleAddonItem['name'] . '\Constants';
                     $hasHostingsorDomains = $this->whmcsRepository->exists(
                         "SELECT COUNT(*) as count
                          FROM tblhosting AS hosting
@@ -108,8 +108,8 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
                     );
                     
                     if ($hasHostingsorDomains) {
-                        $moduleAddonExtensionClass = 'WHMCS\Module\Addon\\' . $moduleAddonItem['name'] . '\Client\Extension\ClientAreaExtension';
-                        $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\\' . $moduleAddonItem['name'] . '\Client\Translation\Translator';
+                        $moduleAddonExtensionClass = 'WHMCS\Module\Addon\Cloud4Africa\\' . $moduleAddonItem['name'] . '\Client\Extension\ClientAreaExtension';
+                        $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\Cloud4Africa\\' . $moduleAddonItem['name'] . '\Client\Translation\Translator';
                         $moduleAddonTranslator = new $moduleAddonTranslatorClass($constantsClass::DEFAULT_TRANSLATION_DIR);
                         $moduleAddonExtension = new $moduleAddonExtensionClass($this->whmcsRepository, $moduleAddonTranslator, []);
 
@@ -140,8 +140,8 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
         foreach ($this->moduleAddonItems as $moduleAddonItem) {
             $hasHostingsorDomains = true;
 
-            if ($moduleAddonItem['name'] != 'c4a_console' && $moduleAddonItem['name'] != 'c4a_account_manager' && $moduleAddonItem['name'] != 'c4a_domain_manager') {
-                $constantsClass = 'WHMCS\Module\Addon\\'.$moduleAddonItem['name'].'\Constants';
+            if ($moduleAddonItem['slug'] != 'c4a_console' && $moduleAddonItem['slug'] != 'c4a_account_manager' && $moduleAddonItem['slug'] != 'c4a_domain_manager') {
+                $constantsClass = 'WHMCS\Module\Addon\Cloud4Africa\\'.$moduleAddonItem['name'].'\Constants';
                 $hasHostingsorDomains = $this->whmcsRepository->exists(
                     "SELECT COUNT(*) as count
                      FROM tblhosting AS hosting
@@ -174,9 +174,9 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
                 );
             }
 
-            if ($hasHostingsorDomains || $moduleAddonItem['name'] == 'c4a_console') {
-                $moduleAddonExtensionClass = 'WHMCS\Module\Addon\\' . $moduleAddonItem['name'] . '\Client\Extension\ClientAreaExtension';
-                $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\\' . $moduleAddonItem['name'] . '\Client\Translation\Translator';
+            if ($hasHostingsorDomains || $moduleAddonItem['slug'] == 'c4a_console') {
+                $moduleAddonExtensionClass = 'WHMCS\Module\Addon\Cloud4Africa\\' . $moduleAddonItem['name'] . '\Client\Extension\ClientAreaExtension';
+                $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\Cloud4Africa\\' . $moduleAddonItem['name'] . '\Client\Translation\Translator';
                 $moduleAddonTranslator = new $moduleAddonTranslatorClass($constantsClass::DEFAULT_TRANSLATION_DIR);
                 $moduleAddonExtension = new $moduleAddonExtensionClass($this->whmcsRepository, $moduleAddonTranslator, []);
             
@@ -210,7 +210,7 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
         
         foreach ($this->moduleAddonItems as $moduleAddonItem) {
             $opts = array();
-            $moduleOptions = json_decode($this->capsule->table('tbladdonmodules')->where('module', $moduleAddonItem['name'])->get(), true);
+            $moduleOptions = json_decode($this->capsule->table('tbladdonmodules')->where('module', $moduleAddonItem['slug'])->get(), true);
             
             foreach ($moduleOptions as $moduleOption) {
                 $opts[$moduleOption['setting']] = $moduleOption['value'];
@@ -218,8 +218,8 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
 
             $hasHostingsorDomains = true;
 
-            if ($moduleAddonItem['name'] != 'c4a_console' && $moduleAddonItem['name'] != 'c4a_account_manager' && $moduleAddonItem['name'] != 'c4a_domain_manager') {
-                $constantsClass = 'WHMCS\Module\Addon\\'.$moduleAddonItem['name'].'\Constants';
+            if ($moduleAddonItem['slug'] != 'c4a_console' && $moduleAddonItem['slug'] != 'c4a_account_manager' && $moduleAddonItem['name'] != 'c4a_domain_manager') {
+                $constantsClass = 'WHMCS\Module\Addon\Cloud4Africa\\'.$moduleAddonItem['name'].'\Constants';
                 $hasHostingsorDomains = $this->whmcsRepository->exists(
                     "SELECT COUNT(*) as count
                      FROM tblhosting AS hosting
@@ -252,9 +252,9 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
                 );
             }
 
-            if ($hasHostingsorDomains || $moduleAddonItem['name'] == 'c4a_console') {
-                $moduleAddonExtensionClass = 'WHMCS\Module\Addon\\' . $moduleAddonItem['name'] . '\Client\Extension\ClientAreaExtension';
-                $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\\' . $moduleAddonItem['name'] . '\Client\Translation\Translator';
+            if ($hasHostingsorDomains || $moduleAddonItem['slug'] == 'c4a_console') {
+                $moduleAddonExtensionClass = 'WHMCS\Module\Addon\Cloud4Africa\\' . $moduleAddonItem['name'] . '\Client\Extension\ClientAreaExtension';
+                $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\Cloud4Africa\\' . $moduleAddonItem['name'] . '\Client\Translation\Translator';
                 $moduleAddonTranslator = new $moduleAddonTranslatorClass($constantsClass::DEFAULT_TRANSLATION_DIR);
                 $moduleAddonExtension = new $moduleAddonExtensionClass($this->whmcsRepository, $moduleAddonTranslator, $opts);
                 
