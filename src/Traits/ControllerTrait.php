@@ -75,7 +75,6 @@ trait ControllerTrait
     {
         $message = null;
         $statusCode = null;
-        $vars['moduleName'] = 'c4a_mailbox_carbonio';
         
         unset($vars['accessToken']);
         
