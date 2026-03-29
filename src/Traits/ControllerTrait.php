@@ -17,10 +17,10 @@ trait ControllerTrait
 {
     /** @var TranslatorInterface $translator **/
     protected TranslatorInterface $translator;
-
+    
     /** @var WhmcsRepositoryInterface $whmcsRepository **/
     protected WhmcsRepositoryInterface $whmcsRepository;
-
+    
     /** @var TemplateManagerInterface $templateManager **/
     protected TemplateManagerInterface $templateManager;
     
@@ -55,14 +55,14 @@ trait ControllerTrait
     {
         $smarty = class_exists(Smarty::class) ? new \Smarty\Smarty() : new \Smarty();
         $smarty->setCompileDir($compilDir ?: self::getCompileDir());
-
+        
         foreach ($values as $key => $value) {
             $smarty->assign($key, $value);
         }
         
         $this->setTemplateVars($smarty->getTemplateVars());
         $html = $smarty->fetch($template);
-
+        
         return new Response($html);
     }
     
@@ -99,12 +99,14 @@ trait ControllerTrait
             $message,
             $statusCode,
             ['Content-Type' => false === empty($vars['queryParams']['ajax']) ? 'application/json' : 'text/html']
-        );
+            );
     }
     
     /**
      * @param \Exception $e
-     * @param array<string, mixed> $vars
+     * @param array $vars
+     * @param string $message
+     * @param int $statusCode
      * @return Response
      */
     protected function getExceptionResponse(\Exception $e, array $vars = []): Response
@@ -116,10 +118,10 @@ trait ControllerTrait
         }
         
         return new Response(
-            $this->translator->trans('contoller.error.default'),
-            500,
+            $e->getMessage() ?: $this->translator->trans('contoller.error.default'),
+            $e->getCode() ?: 500,
             ['Content-Type' => false === empty($vars['queryParams']['ajax']) ? 'application/json' : 'text/html']
-        );
+            );
     }
     
     /**
@@ -177,7 +179,7 @@ trait ControllerTrait
         
         return new Response($html ?: '');
     }
-
+    
     /**
      * @return string
      */
