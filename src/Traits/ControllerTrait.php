@@ -67,18 +67,18 @@ trait ControllerTrait
     }
     
     /**
-     * @param RequestException $e
+     * @param RequestException|\Exception $e
      * @param array<string, mixed> $vars
      * @return Response
      */
-    protected function getRequestExceptionResponse(RequestException $e, array $vars = []): Response
+    protected function getExceptionResponse(RequestException|\Exception $e, array $vars = []): Response
     {
         $message = null;
         $statusCode = null;
         
         unset($vars['accessToken']);
         
-        if ($e->hasResponse()) {
+        if (method_exists($e, 'hasResponse') && $e->hasResponse()) {
             $decoded = json_decode((string) $e->getResponse()->getBody()->getContents(), true);
             
             if (json_last_error() === JSON_ERROR_NONE) {
@@ -86,8 +86,10 @@ trait ControllerTrait
             }
             
             $statusCode = $e->getResponse()->getStatusCode();
+            $message = $this->translator->trans('controller.error.default');
+            $statusCode = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
         } else {
-            $message = $this->translator->trans('contoller.error.default');
+            $message = method_exists($e, 'getMessage') ? $e->getMessage(): $this->translator->trans('controller.error.default');
             $statusCode = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
         }
         
@@ -98,28 +100,6 @@ trait ControllerTrait
         return new Response(
             $message,
             $statusCode,
-            ['Content-Type' => false === empty($vars['queryParams']['ajax']) ? 'application/json' : 'text/html']
-            );
-    }
-    
-    /**
-     * @param \Exception $e
-     * @param array $vars
-     * @param string $message
-     * @param int $statusCode
-     * @return Response
-     */
-    protected function getExceptionResponse(\Exception $e, array $vars = []): Response
-    {
-        unset($vars['accessToken']);
-        
-        if (function_exists('logModuleCall')) {
-            logModuleCall($vars['moduleName'], __FUNCTION__, $vars, $e->getMessage());
-        }
-        
-        return new Response(
-            $e->getMessage() ?: $this->translator->trans('contoller.error.default'),
-            $e->getCode() ?: 500,
             ['Content-Type' => false === empty($vars['queryParams']['ajax']) ? 'application/json' : 'text/html']
             );
     }
