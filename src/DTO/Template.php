@@ -12,4 +12,14 @@ class Template
         $this->key = $key;
         $this->value = $value;
     }
+    
+    public function getKey(): string
+    {
+        return $this->key;
+    }
+    
+    public function getValue(): string
+    {
+        return $this->value;
+    }
 }

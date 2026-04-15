@@ -64,7 +64,7 @@ abstract class AbstractAdminDispatcher implements DispatcherInterface
             $response = $controller->$action($this->parameters);
             
             if (! ($response instanceof Response)) {
-                throw new \Exception('Error', 500);
+                throw new \Exception($this->translator->trans('error.default'), 500);
             }
             
             return $response;

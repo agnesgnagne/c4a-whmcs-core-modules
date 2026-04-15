@@ -57,6 +57,42 @@ class WhmcsRepository implements WhmcsRepositoryInterface
         $this->capsule->connection()->delete($sql, $parameters);
         return;
     }
+    
+    public function findOneBy(string $table, array $criteria = []): array
+    {
+        $sql = "SELECT * FROM ". $table;
+        $values = [];
+        
+        if (count($criteria)) {
+            $count = 0;
+            
+            foreach ($criteria as $item) {
+                $sql .= ' WHERE '.$item['field']. ' '.($item['operator'] ?? '='). ' ? ';
+                $values[] = $item['value'];
+            }
+        }
+        
+        $sql .= ' LIMIT 1';
+        
+        return $this->capsule->connection()->select($sql, $values);
+    }
+    
+    public function findBy(string $table, array $criteria = []): array
+    {
+        $sql = "SELECT * FROM ". $table;
+        $values = [];
+        
+        if (count($criteria)) {
+            $count = 0;
+            
+            foreach ($criteria as $item) {
+                $sql .= ' WHERE '.$item['field']. ' '.($item['operator'] ?? '='). ' ? ';
+                $values[] = $item['value'];
+            }
+        }
+        
+        return $this->capsule->connection()->select($sql, $values);
+    }
 
     public function findValidKarajanToken(): array
     {

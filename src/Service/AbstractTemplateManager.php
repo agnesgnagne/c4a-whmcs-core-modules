@@ -33,7 +33,7 @@ abstract class AbstractTemplateManager implements TemplateManagerInterface
      * @param string $action
      * @param string $connectionName
      */
-    public function __construct(WhmcsRepositoryInterface $whmcsRepository, string $tableName, string $action, ?string $connectionName = 'default')
+    public function __construct(WhmcsRepositoryInterface $whmcsRepository, string $tableName, ?string $action = null, ?string $connectionName = 'default')
     {
         $this->whmcsRepository = $whmcsRepository;
         $this->tableName = $tableName;
@@ -41,16 +41,13 @@ abstract class AbstractTemplateManager implements TemplateManagerInterface
         $this->connectionName = $connectionName;
     }
     
-    public function getTemplate() :?Template
+    public function getTemplate(?string $key = null) :?Template
     {
-        $key = $this->resolveKey();
-        $template = $this->whmcsRepository->select(
-            "SELECT 1
-             FROM $this->tableName
-             WHERE key = ?
-             LIMIT 1",
-            [$key]
-        );
+        if (! $key) {
+            $key = $this->resolveKey();
+        }
+        
+        $template = $this->whmcsRepository->findOneBy($this->tableName, [['field' => 'key', 'value' => $key]]);
         
         if (count($template) == 0) {
             return null;

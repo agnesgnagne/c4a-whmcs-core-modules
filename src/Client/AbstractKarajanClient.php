@@ -26,7 +26,7 @@ abstract class AbstractKarajanClient implements KarajanClientInterface
         ]);
     }
     
-    public function setBaseUrl(string $baseUrl): AbstractKarajanClient
+    public function setBaseUrl(string $baseUrl): self
     {
         $this->baseUrl = $baseUrl;
         return $this;
@@ -40,10 +40,14 @@ abstract class AbstractKarajanClient implements KarajanClientInterface
     
     public function request(string $method, string $url, array $options = [], string $serverType = 'karajan'): ?Response
     {
-        $httpClient = new Client(['verify' => empty($options['verify']) ? $options['verify'] : false]);
+        $httpClient = new Client([
+            'verify' => empty($options['verify']) ? $options['verify'] : false,
+            'base_uri' => $this->getBaseUrl(),
+        ]);
+        
         return $httpClient->request($method, $url, $options);
     }
     
-    public function fetchAuthToken($serverType = 'karajan'): array
+    public function fetchAuthToken(string $serverType = 'karajan'): array
     {}
 }

@@ -22,4 +22,19 @@ abstract class AbstractAdminController implements ControllerInterface
         $this->translator = $translator;
         $this->whmcsRepository = $whmcsRepository;
     }
+    
+    /**
+     * Redirect response
+     *
+     * @param array<string, mixed> $queryParams
+     * @return Response
+     */
+    protected function redirect(array $queryParams): Response
+    {
+        if (false === isset($queryParams['module'])){
+            return $this->getExceptionResponse(new \Exception($this->translator->trans('error.not_found'), 404));
+        }
+        
+        return new RedirectResponse('/admin/addonmodules.php?'.http_build_query($queryParams));
+    }
 }

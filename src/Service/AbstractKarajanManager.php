@@ -23,11 +23,11 @@ abstract class AbstractKarajanManager implements KarajanManagerInterface
         return $this->karajanClient;
     }
 
-    public function getService(string $baseUrl, string $accessToken, string $serviceId): ResponseInterface
+    public function getService(string $accessToken, string $serviceId): ResponseInterface
     {
         return $this->karajanClient->request(
             'GET',
-            sprintf('%s/orchestrator/v1/rest/services/%s', $baseUrl, $serviceId),
+            sprintf('/orchestrator/v1/rest/services/%s', $serviceId),
             [
                 RequestOptions::HEADERS => [
                     'Authorization' => sprintf('Bearer %s', $accessToken),
