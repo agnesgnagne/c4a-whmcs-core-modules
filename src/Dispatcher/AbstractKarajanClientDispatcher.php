@@ -14,6 +14,7 @@ use WHMCS\Cloud4Africa\Repository\WhmcsLocalApiManager;
 use WHMCS\Cloud4Africa\Repository\WhmcsRepositoryInterface;
 use WHMCS\Cloud4Africa\Translation\TranslatorInterface;
 use WHMCS\Cloud4Africa\Service\TemplateManagerInterface;
+use WHMCS\Cloud4Africa\Service\KarajanManagerInterface;
 use WHMCS\Cloud4Africa\Controller\ControllerInterface;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
@@ -25,8 +26,8 @@ abstract class AbstractKarajanClientDispatcher implements DispatcherInterface
     /** @var WhmcsRepositoryInterface $whmcsRepository **/
     protected WhmcsRepositoryInterface $whmcsRepository;
     
-    /** @var KarajanClientInterface $karajanClient **/
-    protected KarajanClientInterface $karajanClient;
+    /** @var KarajanManagerInterface $karajanManager **/
+    protected KarajanManagerInterface $karajanManager;
     
     /** @var TemplateManagerInterface $templateManager **/
     protected TemplateManagerInterface $templateManager;
@@ -47,7 +48,7 @@ abstract class AbstractKarajanClientDispatcher implements DispatcherInterface
     public function __construct(
         TranslatorInterface $translator,
         WhmcsRepositoryInterface $whmcsRepository,
-        KarajanClientInterface $karajanClient,
+        KarajanManagerInterface $karajanManager,
         TemplateManagerInterface $templateManager,
         ControllerInterface $controller,
         array $parameters
@@ -56,7 +57,7 @@ abstract class AbstractKarajanClientDispatcher implements DispatcherInterface
         $this->translator = $translator;
         $this->whmcsRepository = $whmcsRepository;
         $this->templateManager = $templateManager;
-        $this->karajanClient = $karajanClient;
+        $this->karajanManager = $karajanManager;
         $this->controller = $controller;
         $this->parameters = $parameters;
     }

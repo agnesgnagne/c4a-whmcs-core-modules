@@ -5,40 +5,122 @@ namespace WHMCS\Cloud4Africa\Repository;
 interface WhmcsRepositoryInterface
 {
     /**
+     * @param mixed $id
+     * @param string $table
+     * @return object|NULL
+     */
+    public function find(mixed $id, ?string $table = null): ?object;
+    
+    /**
+     * @param array<string, mixed> $criteria
+     * @param string $table
+     * @return object|NULL
+     */
+    public function findOneBy(array $criteria = [], ?string $table = null): ?object;
+    
+    /**
+     * @param array<string, mixed> $criteria
+     * @param string $table
+     * @return array
+     */
+    public function findBy(array $criteria = [], ?string $table = null): array;
+    
+    /**
+     * @param string $column
+     * @param array $criteria
+     * @param string $table
+     * @return array
+     */
+    public function findColumn(string $column, ?array $criteria = [], ?string $table = null): array;
+    
+    /**
+     * @param string $table
+     * @return array
+     */
+    public function findAll(?string $table = null): array;
+    
+    /**
+     * @param array<string, mixed> $criteria
+     * @param string $table
+     * @return int
+     */
+    public function countBy(array $criteria = [], ?string $table = null): int;
+    
+    /**
+     * @param array<string, mixed> $criteria
+     * @param string $table
+     * @return bool
+     */
+    public function existsBy(array $criteria = [], ?string $table = null): bool;
+    
+    /**
+     * @param array<string, mixed> $values
+     * @param string $table
+     * @return bool
+     */
+    public function insert(array $values, ?string $table = null): bool;
+    
+    /**
+     * @param array<string, mixed> $values
+     * @param mixed $id
+     * @return int
+     */
+    public function update(array $values = [], mixed $id, ?string $table = null): int;
+    
+    /**
+     * @param array<string, mixed> $values
+     * @param array<string, mixed> $criteria
+     * @return int
+     */
+    public function updateBy(array $values = [], ?array $criteria = null, ?string $table = null): int;
+    
+    /**
+     * @param mixed $id
+     * @return int
+     */
+    public function delete(mixed $id, ?string $table = null): int;
+    
+    /**
+     * @param array<string, mixed> $criteria
+     * @return int
+     */
+    public function deleteBy(array $criteria = [], ?string $table = null): int;
+    
+    /**
      * @return array<int, \stdClass>
      */
-    public function select(string $sql, array $parameters = []): array;
+    public function selectSQL(string $sql, array $parameters = []): array;
     
     /**
      * @return int
      */
-    public function count(string $sql, array $parameters = []): int;
+    public function countSQL(string $sql, array $parameters = []): int;
     
     /**
      * @return bool
      */
-    public function exists(string $sql, array $parameters = []): bool;
-
+    public function existsSQL(string $sql, array $parameters = []): bool;
+    
     /**
      * @return void
      */
-    public function insert(string $sql, array $parameters = []): void;
-
+    public function insertSQL(string $sql, array $parameters = []): void;
+    
     /**
      * @return void
      */
-    public function update(string $sql, array $parameters = []): void;
-
+    public function updateSQL(string $sql, array $parameters = []): void;
+    
     /**
      * @return void
      */
-    public function delete(string $sql, array $parameters = []): void;
+    public function deleteSQL(string $sql, array $parameters = []): void;
     
     /**
      * @return array<int, \stdClass>
      */
     public function findValidKarajanToken(): array;
-
+    
     /**
      * @return array<int, \stdClass>
      */
@@ -151,7 +233,10 @@ interface WhmcsRepositoryInterface
     public function getClientProductById(int $clientId, int $productId): array;
     
     /**
-     * @return array<int, \stdClass>
+     *
+     * @param int $clientId
+     * @param int $serviceId
+     * @return array<string, mixed>
      */
     public function getClientProductByServiceId(int $clientId, int $serviceId): array;
     

@@ -33,12 +33,12 @@ class WhmcsRepository implements WhmcsRepositoryInterface
      * @param mixed $id
      * @return object|NULL
      */
-    public function find(mixed $id): ?object
+    public function find(mixed $id, ?string $table = null): ?object
     {
         return $this->capsule
-                    ->connection()
-                    ->table($table ?? $this->tableName)
-                    ->where('id', $id);
+        ->connection()
+        ->table($table ?? $this->tableName)
+        ->where('id', $id);
     }
     
     /**
@@ -50,7 +50,7 @@ class WhmcsRepository implements WhmcsRepositoryInterface
     {
         $query = $this->capsule->connection()->table($table ?? $this->tableName);
         
-        foreach ($criteria as $key => $item) {
+        foreach ($criteria as $key => $value) {
             if (is_array($value)) {
                 $query->where($key, $value['operator'], $value['value']);
             } else {
@@ -70,7 +70,7 @@ class WhmcsRepository implements WhmcsRepositoryInterface
     {
         $query = $this->capsule->connection()->table($table ?? $this->tableName);
         
-        foreach ($criteria as $key => $item) {
+        foreach ($criteria as $key => $value) {
             if (is_array($value)) {
                 $query->where($key, $value['operator'], $value['value']);
             } else {
@@ -82,16 +82,33 @@ class WhmcsRepository implements WhmcsRepositoryInterface
     }
     
     /**
+     * @param string $column
+     * @param array $criteria
+     * @param string $table
+     * @return array
+     */
+    public function findColumn(string $column, array $criteria = [], ?string $table = null): array
+    {
+        $query = $this->capsule->connection()->table($this->tableName);
+        
+        foreach ($criteria as $key => $value) {
+            $query->where($key, $value);
+        }
+        
+        return $query->pluck($column)->toArray();
+    }
+    
+    /**
      * @param string $table
      * @return array
      */
     public function findAll(?string $table = null): array
     {
         return $this->capsule
-                    ->connection()
-                    ->table($table ?? $this->tableName)
-                    ->get()
-                    ->toArray();
+        ->connection()
+        ->table($table ?? $this->tableName)
+        ->get()
+        ->toArray();
     }
     
     
@@ -147,8 +164,23 @@ class WhmcsRepository implements WhmcsRepositoryInterface
     public function insert(array $values, ?string $table = null): bool
     {
         return $this->capsule->connection()
+        ->table($table ?? $this->tableName)
+        ->insert($values);
+    }
+    
+    /**
+     * @param array $values
+     * @param mixed $id
+     * @return int
+     */
+    public function update(array $values = [], mixed $id, ?string $table = null): int
+    {
+        return $this->capsule
+                    ->connection()
                     ->table($table ?? $this->tableName)
-                    ->insert($values);
+                    ->where('id', $id)
+                    ->update($values)
+        ;
     }
     
     /**
@@ -156,7 +188,7 @@ class WhmcsRepository implements WhmcsRepositoryInterface
      * @param array $criteria
      * @return int
      */
-    public function update(array $values = [], ?array $criteria = null, ?string $table = null): int
+    public function updateBy(array $values = [], ?array $criteria = [], ?string $table = null): int
     {
         $query = $this->capsule->connection()->table($table ?? $this->tableName);
         
@@ -180,9 +212,9 @@ class WhmcsRepository implements WhmcsRepositoryInterface
     public function delete(mixed $id, ?string $table = null): int
     {
         return $this->capsule->connection()
-                    ->table($table ?? $this->tableName)
-                    ->where('id', $id)
-                    ->delete();
+        ->table($table ?? $this->tableName)
+        ->where('id', $id)
+        ->delete();
     }
     
     /**
@@ -206,19 +238,60 @@ class WhmcsRepository implements WhmcsRepositoryInterface
         return $query->delete();
     }
     
+    public function selectSQL(string $sql, array $parameters = []): array
+    {
+        return $this->capsule->connection()->select($sql, $parameters);
+    }
+    
+    public function countSQL(string $sql, array $parameters = []): int
+    {
+        $results = $this->capsule->connection()->select($sql, $parameters);
+        return (int) ($results[0]->count ?? 0);
+    }
+    
+    public function existsSQL(string $sql, array $parameters = []): bool
+    {
+        $results = $this->capsule->connection()->select($sql, $parameters);
+        return !empty($results);
+    }
+    
+    public function insertSQL(string $sql, array $parameters = []): void
+    {
+        $this->capsule->connection()->insert($sql, $parameters);
+        return;
+    }
+    
+    /**
+     * @return void
+     */
+    public function updateSQL(string $sql, array $parameters = []): void
+    {
+        $this->capsule->connection()->update($sql, $parameters);
+        return;
+    }
+    
+    /**
+     * @return void
+     */
+    public function deleteSQL(string $sql, array $parameters = []): void
+    {
+        $this->capsule->connection()->delete($sql, $parameters);
+        return;
+    }
+    
     public function findValidKarajanToken(): array
     {
         $now = date('c');
-
+        
         return $this->capsule->connection()->select(
             "SELECT *
             FROM c4a_karajan_token
             WHERE expires_at > ?
             LIMIT 1",
             [$now]
-        );
+            );
     }
-
+    
     public function findKarajanServer(string $serverType = 'karajan'): array
     {
         return $this->capsule->connection()->select(
@@ -227,7 +300,7 @@ class WhmcsRepository implements WhmcsRepositoryInterface
             WHERE type = ?
             LIMIT 1",
             [$serverType]
-        );
+            );
     }
     
     public function getRawProducts(): array
@@ -630,6 +703,16 @@ class WhmcsRepository implements WhmcsRepositoryInterface
         ]);
     }
     
+    /**
+     * 
+     * @param int $clientId
+     * @param int $serviceId
+     * @return array{
+     *     result: string,
+     *     totalresults: int,
+     *     products?: mixed
+     * }
+     */
     public function getClientProductByServiceId(int $clientId, int $serviceId): array
     {
         return $this->api->call('GetClientsProducts', [

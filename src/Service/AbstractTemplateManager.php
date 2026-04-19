@@ -47,12 +47,12 @@ abstract class AbstractTemplateManager implements TemplateManagerInterface
             $key = $this->resolveKey();
         }
         
-        $template = $this->whmcsRepository->findOneBy($this->tableName, [['field' => 'key', 'value' => $key]]);
+        $template = $this->whmcsRepository->findOneBy(['key' => $key], $this->tableName);
         
-        if (count($template) == 0) {
+        if (! $template) {
             return null;
         }
         
-        return new Template($template['key'], $template['value']);
+        return new Template($template->key, $template->value);
     }
 }

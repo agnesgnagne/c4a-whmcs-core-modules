@@ -15,6 +15,8 @@ use Smarty\Smarty;
 
 trait TemplateTrait
 {
+    use ResponseTrait;
+    
     /** @var TranslatorInterface $translator **/
     protected TranslatorInterface $translator;
     
@@ -44,67 +46,6 @@ trait TemplateTrait
     public function getTemplateVars(): array
     {
         return $this->templateVars;
-    }
-    
-    /**
-     * @param string $template
-     * @param array<string, mixed> $values
-     * @return Response
-     */
-    protected function getResponse(string $template, array $values = [], ?string $compilDir = null): Response
-    {
-        $smarty = class_exists(Smarty::class) ? new \Smarty\Smarty() : new \Smarty();
-        $smarty->setCompileDir($compilDir ?: self::getCompileDir());
-        
-        foreach ($values as $key => $value) {
-            $smarty->assign($key, $value);
-        }
-        
-        $this->setTemplateVars($smarty->getTemplateVars());
-        $html = $smarty->fetch($template);
-        
-        return new Response($html);
-    }
-    
-    /**
-     * @param RequestException|\Exception $e
-     * @param array<string, mixed> $vars
-     * @return Response
-     */
-    protected function getExceptionResponse(RequestException|\Exception $e, array $vars = []): Response
-    {
-        $message = null;
-        $statusCode = null;
-        
-        unset($vars['accessToken']);
-        
-        if (method_exists($e, 'hasResponse') && $e->hasResponse()) {
-            $decoded = json_decode((string) $e->getResponse()->getBody()->getContents(), true);
-            
-            if (json_last_error() === JSON_ERROR_NONE) {
-                $message = $decoded['message'];
-            }
-            
-            $statusCode = $e->getResponse()->getStatusCode();
-            $message = $this->translator->trans('controller.error.default');
-            $statusCode = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
-        } else {
-            $message = method_exists($e, 'getMessage') ? $e->getMessage(): $this->translator->trans('controller.error.default');
-            $statusCode = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
-        }
-        
-        $this->log([
-            'moduleName' => $vars['moduleName'],
-            'action' => $vars['action'] ?: __FUNCTION__,
-            'request' => $vars,
-            'response' => $message
-        ]);
-        
-        return new Response(
-            $message,
-            $statusCode,
-            ['Content-Type' => false === empty($vars['queryParams']['ajax']) ? 'application/json' : 'text/html']
-        );
     }
     
     /**
@@ -169,17 +110,5 @@ trait TemplateTrait
     protected static function getCompileDir(): string
     {
         return __DIR__ . '/../../../../../../templates_c';
-    }
-    
-    /**
-     * @param array<string, mixed> $params
-     */
-    protected function log(array $params): void
-    {
-        if (function_exists('logModuleCall')) {
-            logModuleCall($params['moduleName'], $params['action'], $params['request'], $params['response']);
-        }
-        
-        return;
     }
 }

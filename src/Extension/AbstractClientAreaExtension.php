@@ -27,10 +27,14 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
     }
 
     public function renderSidebarItem(int $userId, string $currentLink, string $language = 'french'): array
-    {}
+    {
+        return [];
+    }
 
     public function renderDashboardMetricItem(int $userId, string $currentLink, string $language = 'french'): array
-    {}
+    {
+        return [];
+    }
 
     public function renderSidebarItems(int $userId, string $currentLink, string $language = 'french'): array
     {
@@ -41,7 +45,7 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
             
             if ($moduleAddonItem['slug'] != 'c4a_console' && $moduleAddonItem['slug'] != 'c4a_account_manager' && $moduleAddonItem['slug'] != 'c4a_domain_manager') {
                 $constantsClass = 'WHMCS\Module\Addon\Cloud4Africa\\' . $moduleAddonItem['name'] . '\Constants';
-                $hasHostingsorDomains = $this->whmcsRepository->exists(
+                $hasHostingsorDomains = $this->whmcsRepository->existsSQL(
                     "SELECT COUNT(*) as count
                      FROM tblhosting AS hosting
                      JOIN tblproducts AS product
@@ -53,7 +57,7 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
             }
 
             if ($moduleAddonItem['name'] == 'c4a_domain_manager') {
-                $hasHostingsorDomains = $this->whmcsRepository->exists(
+                $hasHostingsorDomains = $this->whmcsRepository->existsSQL(
                     "SELECT 1
                      FROM tbldomains
                      WHERE userid = ?
@@ -63,6 +67,7 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
             }
 
             if ($hasHostingsorDomains || $moduleAddonItem['slug'] === 'c4a_console' || $moduleAddonItem['slug'] === 'c4a_account_manager') {
+                $constantsClass = 'WHMCS\Module\Addon\Cloud4Africa\\' . $moduleAddonItem['name'] . '\Constants';
                 $moduleAddonExtensionClass = 'WHMCS\Module\Addon\Cloud4Africa\\' . $moduleAddonItem['name'] . '\Extension\ClientAreaExtension';
                 $moduleAddonTranslatorClass = 'WHMCS\Module\Addon\Cloud4Africa\\' . $moduleAddonItem['name'] . '\Translation\Translator';
                 $moduleAddonTranslator = new $moduleAddonTranslatorClass($constantsClass::DEFAULT_TRANSLATION_DIR);
@@ -88,7 +93,7 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
                 $hasHostingsorDomains = true;
                 
                 if ($moduleAddonItem['name'] == 'c4a_domain_manager') {
-                    $hasHostingsorDomains = $this->whmcsRepository->exists(
+                    $hasHostingsorDomains = $this->whmcsRepository->existsSQL(
                         "SELECT 1
                          FROM tbldomains
                          WHERE userid = ?
@@ -97,7 +102,7 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
                     );
                 } else {
                     $constantsClass = 'WHMCS\Module\Addon\Cloud4Africa\\' . $moduleAddonItem['name'] . '\Constants';
-                    $hasHostingsorDomains = $this->whmcsRepository->exists(
+                    $hasHostingsorDomains = $this->whmcsRepository->existsSQL(
                         "SELECT COUNT(*) as count
                          FROM tblhosting AS hosting
                          JOIN tblproducts AS product
@@ -142,7 +147,7 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
 
             if ($moduleAddonItem['slug'] != 'c4a_console' && $moduleAddonItem['slug'] != 'c4a_account_manager' && $moduleAddonItem['slug'] != 'c4a_domain_manager') {
                 $constantsClass = 'WHMCS\Module\Addon\Cloud4Africa\\'.$moduleAddonItem['name'].'\Constants';
-                $hasHostingsorDomains = $this->whmcsRepository->exists(
+                $hasHostingsorDomains = $this->whmcsRepository->existsSQL(
                     "SELECT COUNT(*) as count
                      FROM tblhosting AS hosting
                      JOIN tblproducts AS product
@@ -154,7 +159,7 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
             }
             
             if ($moduleAddonItem['name'] == 'c4a_account_manager') {
-                $hasHostingsorDomains = $this->whmcsRepository->exists(
+                $hasHostingsorDomains = $this->whmcsRepository->existsSQL(
                     "SELECT COUNT(*) as count
                      FROM tblhosting AS hosting
                      JOIN tblproducts AS product
@@ -165,7 +170,7 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
             }
 
             if ($moduleAddonItem['name'] == 'c4a_domain_manager') {
-                $hasHostingsorDomains = $this->whmcsRepository->exists(
+                $hasHostingsorDomains = $this->whmcsRepository->existsSQL(
                     "SELECT 1
                      FROM tbldomains
                      WHERE userid = ?
@@ -220,7 +225,7 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
 
             if ($moduleAddonItem['slug'] != 'c4a_console' && $moduleAddonItem['slug'] != 'c4a_account_manager' && $moduleAddonItem['name'] != 'c4a_domain_manager') {
                 $constantsClass = 'WHMCS\Module\Addon\Cloud4Africa\\'.$moduleAddonItem['name'].'\Constants';
-                $hasHostingsorDomains = $this->whmcsRepository->exists(
+                $hasHostingsorDomains = $this->whmcsRepository->existsSQL(
                     "SELECT COUNT(*) as count
                      FROM tblhosting AS hosting
                      JOIN tblproducts AS product
@@ -232,7 +237,7 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
             } 
             
             if ($moduleAddonItem['name'] == 'c4a_account_manager') {
-                $hasHostingsorDomains = $this->whmcsRepository->exists(
+                $hasHostingsorDomains = $this->whmcsRepository->existsSQL(
                     "SELECT COUNT(*) as count
                      FROM tblhosting AS hosting
                      JOIN tblproducts AS product
@@ -243,7 +248,7 @@ abstract class AbstractClientAreaExtension implements ClientAreaExtensionInterfa
             }
 
             if ($moduleAddonItem['name'] == 'c4a_domain_manager') {
-                $hasHostingsorDomains = $this->whmcsRepository->exists(
+                $hasHostingsorDomains = $this->whmcsRepository->existsSQL(
                     "SELECT 1
                      FROM tbldomains
                      WHERE userid = ?

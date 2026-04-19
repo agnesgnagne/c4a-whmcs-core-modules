@@ -11,6 +11,7 @@ use WHMCS\Cloud4Africa\Repository\WhmcsRepositoryInterface;
 use WHMCS\Cloud4Africa\Translation\TranslatorInterface;
 use WHMCS\Cloud4Africa\Controller\ControllerInterface;
 use Illuminate\Database\Capsule\Manager as Capsule;
+use WHMCS\Cloud4Africa\Service\KarajanManagerInterface;
 
 abstract class AbstractAdminDispatcher implements DispatcherInterface
 {
@@ -23,25 +24,31 @@ abstract class AbstractAdminDispatcher implements DispatcherInterface
     /** @var ControllerInterface $controller **/
     protected ControllerInterface $controller;
     
+    /** @var KarajanManagerInterface $karajanManager **/
+    protected KarajanManagerInterface $karajanManager;
+    
     /** @var array $parameters **/
     protected $parameters;
     
     /**
-     * @param Translator $translator
+     * @param TranslatorInterface $translator
      * @param WhmcsRepositoryInterface $whmcsRepository
-     * @param TemplateManager $templateManager
+     * @param ControllerInterface $controller
+     * @param KarajanManagerInterface $karajanManager
      * @param array $parameters
      */
     public function __construct(
         TranslatorInterface $translator,
         WhmcsRepositoryInterface $whmcsRepository,
         ControllerInterface $controller,
+        KarajanManagerInterface $karajanManager,
         array $parameters
     )
     {
         $this->translator = $translator;
         $this->whmcsRepository = $whmcsRepository;
         $this->controller = $controller;
+        $this->karajanManager = $karajanManager;
         $this->parameters = $parameters;
     }
     
@@ -58,7 +65,7 @@ abstract class AbstractAdminDispatcher implements DispatcherInterface
         $this->parameters['translator'] = $this->translator;
         $this->parameters = array_merge($this->parameters, $this->buildExtraParameters());
         
-        $controller = $this->getController($this->translator, $this->whmcsRepository);
+        $controller = $this->getController($this->translator, $this->whmcsRepository, $this->karajanManager);
         
         if (is_callable([$controller, $action])) {
             $response = $controller->$action($this->parameters);
@@ -74,6 +81,6 @@ abstract class AbstractAdminDispatcher implements DispatcherInterface
     public function buildExtraParameters(?int $hostingId = null): array
     {}
     
-    public function getController(TranslatorInterface $translator, WhmcsRepositoryInterface $whmcsRepository): ControllerInterface
+    public function getController(TranslatorInterface $translator, WhmcsRepositoryInterface $whmcsRepository, KarajanManagerInterface $karajanManager): ControllerInterface
     {}
 }
