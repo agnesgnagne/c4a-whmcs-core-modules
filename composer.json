@@ -6,8 +6,5 @@
     "psr-4": {
       "WHMCS\\Cloud4Africa\\": "src/"
     }
-  },
-  "require": {
-    "symfony/http-foundation": "^6.4"
   }
 }
