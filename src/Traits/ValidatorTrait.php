@@ -2,27 +2,50 @@
 
 namespace WHMCS\Cloud4Africa\Traits;
 
-use Symfony\Component\Validator\Validation;
-use Symfony\Component\Validator\Constraints as Assert;
+use Illuminate\Validation\Factory;
+use Illuminate\Translation\Translator;
+use Illuminate\Translation\FileLoader;
+use Illuminate\Filesystem\Filesystem;
+use Illuminate\Validation\ValidationException;
 
 trait ValidatorTrait
 {
-    protected function validate(array $data, Assert\Collection $constraints, bool $details = false): array
+    /**
+     * 
+     * @param array $data
+     * @param array $rules
+     * @param array $messages
+     * @param array $attributes
+     * @param string $locale
+     * @param string $translationDirectory
+     * @return array
+     */
+    protected function validate(
+        array $data = [],
+        array $rules = [],
+        array $messages = [],
+        array $attributes = [],
+        ?string $locale = 'fr',
+        ?string $translationDirectory = null
+        ): array
     {
-        $validator = Validation::createValidator();
+        $filesystem = new Filesystem();
         
-        $violations = $validator->validate($data, $constraints);
+        $loader = new FileLoader(
+            $filesystem,
+            $translationDirectory ?? __DIR__.'/../../lang'
+            );
         
-        $errors = [];
+        $translator = new Translator($loader, $locale);
         
-        foreach ($violations as $violation) {
-            if (! $details) {
-                $errors[] = ['message' => $violation->getMessage()];
-            } else {
-                $errors[$violation->getPropertyPath()][] = $violation->getMessage();
-            }
+        $factory = new Factory($translator);
+        
+        $validator = $factory->make($data, $rules, $messages, $attributes);
+        
+        if ($validator->fails()) {
+            throw new ValidationException($validator);
         }
         
-        return $errors;
+        return $validator->validated();
     }
 }
