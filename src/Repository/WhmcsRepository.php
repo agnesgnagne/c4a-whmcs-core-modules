@@ -751,4 +751,11 @@ class WhmcsRepository implements WhmcsRepositoryInterface
             'domain' => $domain,
         ]);
     }
+    
+    public function getDecryptedPassword($password): array
+    {
+        return $this->api->call('DecryptPassword', [
+            'password2' => $password,
+        ]);
+    }
 }

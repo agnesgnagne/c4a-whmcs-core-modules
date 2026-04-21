@@ -254,4 +254,9 @@ interface WhmcsRepositoryInterface
      * @return array<int, \stdClass>
      */
     public function getDomainWhois(string $domain): array;
+    
+    /**
+     * @return array<string, \stdClass>
+     */
+    public function getDecryptedPassword($password): array;
 }

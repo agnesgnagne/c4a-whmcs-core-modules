@@ -10,23 +10,24 @@ use WHMCS\Cloud4Africa\Util\Translator;
 
 class KarajanClient extends AbstractKarajanClient
 {
-    public function fetchAuthToken($serverType = 'karajan'): array
+    public function fetchAuthToken(string $serverType = 'karajan', bool $enableCache = false): array
     {
-        /*self::initializeTokenDatabaseSchema();*/
-
-        $translator = new Translator();
+        if ($enableCache) {
+            self::initializeTokenDatabaseSchema();
+        }
+        
         $token = $this->whmcsRepository->findValidKarajanToken();
-
-        $accessToken = $token['access_token'];
-        $projectId = $token['project_id'];
-
+        
+        $accessToken = $token['access_token'] ?? null;
+        $projectId = $token['project_id'] ?? null;
+        
         if (! $accessToken) {
             $httpClient = $this->createClient($serverType);
-
+            
             $server = $this->whmcsRepository->findKarajanServer($serverType);
-            $results = localAPI('DecryptPassword', ['password2' => $server['password']]);
+            $results = $this->whmcsRepository->getDecryptedPassword($server['password']);
             $password = $results['password'];
-
+            
             try {
                 $response = $httpClient->request('POST', '/identity/v1/rest/auth/tokens', [
                     RequestOptions::HEADERS => [
@@ -46,34 +47,45 @@ class KarajanClient extends AbstractKarajanClient
                 ]);
             } catch (RequestException $e) {
                 $statusCode = $e->getResponse()->getStatusCode();
-                $errorMessage = ($statusCode === 400) ? $translator->trans('error.bad_request') : (($statusCode === 404) ?
-                $translator->trans('error.not_found') : $translator->trans('error.default'));
-
-                logModuleCall('c4a_whmcs', __FUNCTION__, [], $e->getResponse()->getBody()->getContents());
+                
+                switch ($statusCode){
+                    case 400:
+                        $errorMessage = 'Bad Request';
+                        break;
+                    case 404:
+                        $errorMessage = 'Not Found';
+                        break;
+                    default:
+                        $errorMessage = 'Server Error';
+                        break;
+                }
+                
                 throw new \Exception($errorMessage);
             } catch (\Exception $e) {
                 logModuleCall('c4a_whmcs', __FUNCTION__, [], $e->getMessage());
-                throw new \Exception($translator->trans('error.default'));
+                throw new \Exception('Server Error');
             }
-
+            
             $token = json_decode($response->getBody()->getContents(), true);
-
-            Capsule::table('c4a_karajan_token')->insert([
-                'access_token' => $token['tokens']['accessToken']['id'],
-                'project_id' => $token['user']['project']['id'],
-                'expires_at' => $token['tokens']['accessToken']['expiresAt']
-            ]);
-
+            
+            if ($enableCache) {
+                Capsule::table('c4a_karajan_token')->insert([
+                    'access_token' => $token['tokens']['accessToken']['id'],
+                    'project_id' => $token['user']['project']['id'],
+                    'expires_at' => $token['tokens']['accessToken']['expiresAt']
+                ]);
+            }
+            
             $accessToken = $token['tokens']['accessToken']['id'];
             $projectId = $token['user']['project']['id'];
         }
-
+        
         return [
             'accessToken' => $accessToken,
             'projectId' => $projectId
         ];
     }
-
+    
     private static function initializeTokenDatabaseSchema()
     {
         try {
@@ -87,13 +99,13 @@ class KarajanClient extends AbstractKarajanClient
                         $table->text('project_id');
                         $table->datetime('expires_at');
                     }
-                );
+                    );
             }
         } catch (\Exception $e) {
             logModuleCall('c4a_whmcs', __FUNCTION__, [], $e->getMessage());
             throw new \Exception($translator->trans('error.default'));
         }
-
+        
         return;
     }
 }
