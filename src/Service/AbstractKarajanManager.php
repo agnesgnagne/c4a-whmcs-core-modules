@@ -7,6 +7,7 @@ use WHMCS\Cloud4Africa\Repository\WhmcsRepositoryInterface;
 use WHMCS\Cloud4Africa\Client\KarajanClientInterface;
 use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\RequestOptions;
+use GuzzleHttp\Psr7\Response;
 
 abstract class AbstractKarajanManager implements KarajanManagerInterface
 {
@@ -22,7 +23,6 @@ abstract class AbstractKarajanManager implements KarajanManagerInterface
     {
         return $this->karajanClient;
     }
-    
     
     /**
      * @return array<string, mixed>
@@ -422,7 +422,7 @@ abstract class AbstractKarajanManager implements KarajanManagerInterface
                     'Accept' => 'application/json'
                 ]
             ]
-        );
+            );
     }
 }
 
