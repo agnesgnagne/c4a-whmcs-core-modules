@@ -11,7 +11,7 @@ use Illuminate\Validation\ValidationException;
 trait ValidatorTrait
 {
     /**
-     * 
+     *
      * @param array $data
      * @param array $rules
      * @param array $messages
@@ -28,24 +28,39 @@ trait ValidatorTrait
         ?string $locale = 'fr',
         ?string $translationDirectory = null
         ): array
+        {
+            $data = $this->sanitize($data, $rules);
+            
+            $filesystem = new Filesystem();
+            
+            $loader = new FileLoader(
+                $filesystem,
+                $translationDirectory ?? __DIR__.'/../../lang'
+                );
+            
+            $translator = new Translator($loader, $locale);
+            
+            $factory = new Factory($translator);
+            
+            $validator = $factory->make($data, $rules, $messages, $attributes);
+            
+            if ($validator->fails()) {
+                throw new ValidationException($validator);
+            }
+            
+            return $validator->validated();
+    }
+    
+    protected function sanitize(array $data, array $rules): array
     {
-        $filesystem = new Filesystem();
+        $allowedProperties = array_keys($rules);
         
-        $loader = new FileLoader(
-            $filesystem,
-            $translationDirectory ?? __DIR__.'/../../lang'
-            );
+        $unexpected = array_diff(array_keys($data), $allowedProperties);
         
-        $translator = new Translator($loader, $locale);
-        
-        $factory = new Factory($translator);
-        
-        $validator = $factory->make($data, $rules, $messages, $attributes);
-        
-        if ($validator->fails()) {
-            throw new ValidationException($validator);
+        if (is_array($unexpected) && count($unexpected) > 0) {
+            throw new \Exception(json_encode(array_values($unexpected)));
         }
         
-        return $validator->validated();
+        return array_intersect_key($data, array_flip($allowedProperties));
     }
 }

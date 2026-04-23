@@ -27,28 +27,6 @@ trait TemplateTrait
     protected TemplateManagerInterface $templateManager;
     
     /**
-     * @var array
-     */
-    protected array $templateVars;
-    
-    /**
-     * @param array $templateVars
-     * @return array
-     */
-    public function setTemplateVars(array $templateVars): array
-    {
-        return $this->templateVars = $templateVars;
-    }
-    
-    /**
-     * @return array
-     */
-    public function getTemplateVars(): array
-    {
-        return $this->templateVars;
-    }
-    
-    /**
      * @param string $str
      * @return string
      */

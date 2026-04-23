@@ -14,20 +14,22 @@ use WHMCS\Cloud4Africa\Repository\WhmcsLocalApiManager;
 use WHMCS\Cloud4Africa\Repository\WhmcsRepositoryInterface;
 use WHMCS\Cloud4Africa\Translation\TranslatorInterface;
 use WHMCS\Cloud4Africa\Service\TemplateManagerInterface;
-use WHMCS\Cloud4Africa\Service\KarajanManagerInterface;
 use WHMCS\Cloud4Africa\Controller\ControllerInterface;
 use Illuminate\Database\Capsule\Manager as Capsule;
+use WHMCS\Cloud4Africa\Traits\ResponseTrait;
 
 abstract class AbstractKarajanClientDispatcher implements DispatcherInterface
 {
+    use ResponseTrait;
+    
     /** @var TranslatorInterface $translator **/
     protected TranslatorInterface $translator;
     
     /** @var WhmcsRepositoryInterface $whmcsRepository **/
     protected WhmcsRepositoryInterface $whmcsRepository;
     
-    /** @var KarajanManagerInterface $karajanManager **/
-    protected KarajanManagerInterface $karajanManager;
+    /** @var KarajanClientInterface $karajanClient **/
+    protected KarajanClientInterface $karajanClient;
     
     /** @var TemplateManagerInterface $templateManager **/
     protected TemplateManagerInterface $templateManager;
@@ -48,7 +50,7 @@ abstract class AbstractKarajanClientDispatcher implements DispatcherInterface
     public function __construct(
         TranslatorInterface $translator,
         WhmcsRepositoryInterface $whmcsRepository,
-        KarajanManagerInterface $karajanManager,
+        KarajanClientInterface $karajanClient,
         TemplateManagerInterface $templateManager,
         ControllerInterface $controller,
         array $parameters
@@ -57,7 +59,7 @@ abstract class AbstractKarajanClientDispatcher implements DispatcherInterface
         $this->translator = $translator;
         $this->whmcsRepository = $whmcsRepository;
         $this->templateManager = $templateManager;
-        $this->karajanManager = $karajanManager;
+        $this->karajanClient = $karajanClient;
         $this->controller = $controller;
         $this->parameters = $parameters;
     }
@@ -76,30 +78,48 @@ abstract class AbstractKarajanClientDispatcher implements DispatcherInterface
             $hosting = json_decode(Capsule::table('tblhosting')->where('id', $hostingId)->get(), true);
             
             if (true === empty($hosting[0])) {
-                logModuleCall($this->parameters['moduleName'], __FUNCTION__, [], $this->translator->trans('client_dispatch.error.hosting_not_found'));
-                throw new \Exception($this->translator->trans('client_dispatch.error.default'));
+                $this->log([
+                    'moduleName' => $vars['moduleName'],
+                    'action' => $vars['action'] ?: __FUNCTION__,
+                    'request' => $vars,
+                    'response' => $this->translator->trans('client_dispatch.error.hosting_not_found')
+                ]);
+                
+                return $this->getExceptionResponse(new \Exception($this->translator->trans('client_dispatch.error.default'), 500), $vars);
             }
             
             $this->parameters['hosting'] = $hosting[0];
             $product = json_decode(Capsule::table('tblproducts')->where('id', $hosting[0]['packageid'])->get(), true);
             
             if (true === empty($product[0])) {
-                logModuleCall($this->parameters['moduleName'], __FUNCTION__, [], $this->translator->trans('client_dispatch.error.product_not_found'));
-                throw new \Exception($this->translator->trans('client_dispatch.error.default'));
+                $this->log([
+                    'moduleName' => $vars['moduleName'],
+                    'action' => $vars['action'] ?: __FUNCTION__,
+                    'request' => $vars,
+                    'response' => $this->translator->trans('client_dispatch.error.hosting_not_found')
+                ]);
+                
+                return $this->getExceptionResponse(new \Exception($this->translator->trans('client_dispatch.error.default'), 500), $vars);
             }
             
             $this->parameters['product'] = $product[0]; // Pass product package to controller
             
             $serviceIdField = Capsule::table('tblcustomfields')->where('fieldname', 'serviceId')->where('relid', $hosting[0]['packageid'])->get();
             $serviceIdFieldValue = Capsule::table('tblcustomfieldsvalues')
-                                        ->where('fieldid', $serviceIdField[0]->id)
-                                        ->where('relid', $hostingId)
-                                        ->get()
+            ->where('fieldid', $serviceIdField[0]->id)
+            ->where('relid', $hostingId)
+            ->get()
             ;
             
             if (true === empty($serviceIdFieldValue[0]->value)) {
-                logModuleCall($this->parameters['moduleName'], __FUNCTION__, [], $this->translator->trans('client_dispatch.error.service_id_not_found'));
-                throw new \Exception($this->translator->trans('client_dispatch.error.default'));
+                $this->log([
+                    'moduleName' => $vars['moduleName'],
+                    'action' => $vars['action'] ?: __FUNCTION__,
+                    'request' => $vars,
+                    'response' => $this->translator->trans('client_dispatch.error.service_id_not_found')
+                ]);
+                
+                return $this->getExceptionResponse(new \Exception($this->translator->trans('client_dispatch.error.default'), 500), $vars);
             }
             
             $token = $this->karajanClient->fetchAuthToken();
@@ -115,13 +135,16 @@ abstract class AbstractKarajanClientDispatcher implements DispatcherInterface
                             'Authorization' => sprintf('Bearer %s', $this->parameters['accessToken'])
                         ]
                     ]
-                );
+                    );
             } catch (RequestException $e) {
-                logModuleCall($this->parameters['moduleName'], __FUNCTION__, [], $e->getResponse()->getBody()->getContents());
-                throw new \Exception($this->translator->trans('client_dispatch.error.default'));
-            } catch (\Exception $e) {
-                logModuleCall($this->parameters['moduleName'], __FUNCTION__, [], $e->getMessage());
-                throw new \Exception($this->translator->trans('client_dispatch.error.default'));
+                $this->log([
+                    'moduleName' => $vars['moduleName'],
+                    'action' => $vars['action'] ?: __FUNCTION__,
+                    'request' => $vars,
+                    'response' => $e->getResponse()->getBody()->getContents()
+                ]);
+                
+                return $this->getExceptionResponse(new \Exception($this->translator->trans('client_dispatch.error.default'), 500), $vars);
             }
             
             $service = json_decode($response->getBody()->getContents(), true);
@@ -136,8 +159,14 @@ abstract class AbstractKarajanClientDispatcher implements DispatcherInterface
             $product = json_decode(Capsule::table('tblproducts')->where('id', $hosting[0]['packageid'])->get(), true);
             
             if (true === empty($product[0])) {
-                logModuleCall($this->parameters['moduleName'], __FUNCTION__, [], $this->translator->trans('client_dispatch.error.product_not_found'));
-                throw new \Exception($this->translator->trans('client_dispatch.error.default'));
+                $this->log([
+                    'moduleName' => $vars['moduleName'],
+                    'action' => $vars['action'] ?: __FUNCTION__,
+                    'request' => $vars,
+                    'response' => $this->translator->trans('client_dispatch.error.product_not_found')
+                ]);
+                
+                return $this->getExceptionResponse(new \Exception($this->translator->trans('client_dispatch.error.default'), 500), $vars);
             }
             
             $this->parameters['product'] = $product[0];

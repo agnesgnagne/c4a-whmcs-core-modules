@@ -19,6 +19,29 @@ trait ResponseTrait
     protected TranslatorInterface $translator;
     
     /**
+     * @var array
+     */
+    protected array $templateVars = [];
+    
+    /**
+     * @param array $templateVars
+     * @return array
+     */
+    public function setTemplateVars(array $templateVars): array
+    {
+        return $this->templateVars = $templateVars;
+    }
+    
+    /**
+     * @return array
+     */
+    public function getTemplateVars(): array
+    {
+        return $this->templateVars;
+    }
+    
+    
+    /**
      * @param string $template
      * @param array<string, mixed> $values
      * @return Response
@@ -61,8 +84,8 @@ trait ResponseTrait
             $message = $this->translator->trans('controller.error.default');
             $statusCode = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
         } else {
-            $message = method_exists($e, 'getMessage') ? $e->getMessage(): $this->translator->trans('controller.error.default');
-            $statusCode = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
+            $message = method_exists($e, 'getMessage') ? $e->getMessage(): $this->translator->trans('controller.error.default');die($e->getCode());
+            $statusCode = method_exists($e, 'getCode') ? $e->getCode() : 500;
         }
         
         $this->log([
@@ -76,7 +99,7 @@ trait ResponseTrait
             $message,
             $statusCode,
             ['Content-Type' => false === empty($vars['queryParams']['ajax']) ? 'application/json' : 'text/html']
-        );
+            );
     }
     
     /**
