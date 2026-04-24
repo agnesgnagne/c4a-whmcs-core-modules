@@ -26,7 +26,7 @@ class WhmcsRepository implements WhmcsRepositoryInterface
     {
         $this->api = $api;
         $this->capsule = $capsule;
-        $this->tableName = $tableName;
+        $this->tableName = $tableName ?? '';
     }
     
     /**
@@ -87,7 +87,7 @@ class WhmcsRepository implements WhmcsRepositoryInterface
      * @param string $table
      * @return array
      */
-    public function findColumn(string $column, array $criteria = [], ?string $table = null): array
+    public function findColumn(string $column, ?array $criteria = [], ?string $table = null): array
     {
         $query = $this->capsule->connection()->table($this->tableName);
         
