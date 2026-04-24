@@ -78,13 +78,13 @@ trait ResponseTrait
             
             if (json_last_error() === JSON_ERROR_NONE) {
                 $message = $decoded['message'];
+                $statusCode = $e->getResponse()->getStatusCode();
+            } else {
+                $message = $this->translator->trans('controller.error.default');
+                $statusCode = method_exists($e, 'getCode') ? $e->getCode() : 500;
             }
-            
-            $statusCode = $e->getResponse()->getStatusCode();
-            $message = $this->translator->trans('controller.error.default');
-            $statusCode = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
         } else {
-            $message = method_exists($e, 'getMessage') ? $e->getMessage(): $this->translator->trans('controller.error.default');die($e->getCode());
+            $message = method_exists($e, 'getMessage') ? $e->getMessage(): $this->translator->trans('controller.error.default');
             $statusCode = method_exists($e, 'getCode') ? $e->getCode() : 500;
         }
         
