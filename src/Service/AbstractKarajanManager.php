@@ -14,9 +14,15 @@ abstract class AbstractKarajanManager implements KarajanManagerInterface
     /** @var KarajanClientInterface $karajanClient **/
     protected KarajanClientInterface $karajanClient;
     
-    public function __construct(KarajanClientInterface $karajanClient)
+    /**
+     * @var CacheManager
+     */
+    private CacheManager $cacheManager;
+    
+    public function __construct(KarajanClientInterface $karajanClient, string $moduleNamespace ='c4a')
     {
         $this->karajanClient = $karajanClient;
+        $this->cacheManager = CacheManager::getInstance($moduleNamespace);
     }
     
     protected function getKarajanClient(): KarajanClientInterface
@@ -27,7 +33,7 @@ abstract class AbstractKarajanManager implements KarajanManagerInterface
     /**
      * @return array<string, mixed>
      */
-    public function fetchAuthToken(): array
+    public function fetchIdentityAuthToken(): array
     {
         return $this->karajanClient->fetchAuthToken();
     }
@@ -37,7 +43,7 @@ abstract class AbstractKarajanManager implements KarajanManagerInterface
      * @param array<string, mixed> $queryParams
      * @return Response
      */
-    public function listAccounts(string $accessToken, array $queryParams = []): Response
+    public function listOrchestratorAccounts(string $accessToken, array $queryParams = []): Response
     {
         return $this->karajanClient->request(
             'GET',
@@ -58,7 +64,7 @@ abstract class AbstractKarajanManager implements KarajanManagerInterface
      * @param string $accountId
      * @return Response
      */
-    public function getAccount(string $accessToken, string $accountId): Response
+    public function getOrchestratorAccount(string $accessToken, string $accountId): Response
     {
         return $this->karajanClient->request(
             'GET',
@@ -69,7 +75,7 @@ abstract class AbstractKarajanManager implements KarajanManagerInterface
                     'Authorization' => sprintf('Bearer %s', $accessToken),
                 ]
             ]
-            );
+        );
     }
     
     /**
@@ -78,7 +84,7 @@ abstract class AbstractKarajanManager implements KarajanManagerInterface
      * @param string $email
      * @return Response
      */
-    public function getAccountByEmail(string $accessToken, string $email): Response
+    public function getOrchestratorAccountByEmail(string $accessToken, string $email): Response
     {
         return $this->karajanClient->request(
             'GET',
@@ -92,7 +98,7 @@ abstract class AbstractKarajanManager implements KarajanManagerInterface
                     'email' => $email,
                 ],
             ]
-            );
+        );
     }
     
     /**
@@ -101,7 +107,7 @@ abstract class AbstractKarajanManager implements KarajanManagerInterface
      * @param array<string, mixed> $data
      * @return Response
      */
-    public function createAccount(string $accessToken, array $data): Response
+    public function createOrchestratorAccount(string $accessToken, array $data): Response
     {
         return $this->karajanClient->request(
             'POST',
@@ -113,7 +119,7 @@ abstract class AbstractKarajanManager implements KarajanManagerInterface
                 ],
                 RequestOptions::JSON => $data
             ]
-            );
+        );
     }
     
     /**
@@ -123,7 +129,7 @@ abstract class AbstractKarajanManager implements KarajanManagerInterface
      * @param array<string, mixed> $data
      * @return Response
      */
-    public function updateAccount(string $accessToken, string $accountId, array $data): Response
+    public function updateOrchestratorAccount(string $accessToken, string $accountId, array $data): Response
     {
         return $this->karajanClient->request(
             'PUT',
@@ -135,7 +141,7 @@ abstract class AbstractKarajanManager implements KarajanManagerInterface
                 ],
                 RequestOptions::JSON => $data
             ]
-            );
+        );
     }
     
     /**
@@ -144,7 +150,7 @@ abstract class AbstractKarajanManager implements KarajanManagerInterface
      * @param string $accountId
      * @return Response
      */
-    public function getAccountServices(string $accessToken, string $accountId): Response
+    public function getOrchestratorAccountServices(string $accessToken, string $accountId): Response
     {
         return $this->karajanClient->request(
             'GET',
@@ -155,7 +161,7 @@ abstract class AbstractKarajanManager implements KarajanManagerInterface
                     'Authorization' => 'Bearer ' . $accessToken
                 ]
             ]
-            );
+        );
     }
     
     /**
@@ -165,7 +171,7 @@ abstract class AbstractKarajanManager implements KarajanManagerInterface
      * @param array<int, mixed> $services
      * @return Response
      */
-    public function attachAccountServices(string $accessToken, string $accountId, array $services): Response
+    public function attachOrchestratorAccountServices(string $accessToken, string $accountId, array $services): Response
     {
         return $this->karajanClient->request(
             'PUT',
@@ -179,7 +185,7 @@ abstract class AbstractKarajanManager implements KarajanManagerInterface
                     'services' => $services
                 ]
             ]
-            );
+        );
     }
     
     /**
@@ -189,7 +195,7 @@ abstract class AbstractKarajanManager implements KarajanManagerInterface
      * @param array<int, mixed> $services
      * @return Response
      */
-    public function detachAccountServices(string $accessToken, string $accountId, array $services): Response
+    public function detachOrchestratorAccountServices(string $accessToken, string $accountId, array $services): Response
     {
         return $this->karajanClient->request(
             'DELETE',
@@ -203,7 +209,7 @@ abstract class AbstractKarajanManager implements KarajanManagerInterface
                     'serviceIds' => $services
                 ]
             ]
-            );
+        );
     }
     
     /**
@@ -213,7 +219,7 @@ abstract class AbstractKarajanManager implements KarajanManagerInterface
      * @param array<int, mixed> $services
      * @return Response
      */
-    public function promoteAccountServices(string $accessToken, string $accountId, array $services): Response
+    public function promoteOrchestratorAccountServices(string $accessToken, string $accountId, array $services): Response
     {
         return $this->karajanClient->request(
             'PUT',
@@ -227,7 +233,7 @@ abstract class AbstractKarajanManager implements KarajanManagerInterface
                     'serviceIds' => $services
                 ]
             ]
-            );
+        );
     }
     
     /**
@@ -237,7 +243,7 @@ abstract class AbstractKarajanManager implements KarajanManagerInterface
      * @param array<int, mixed> $services
      * @return Response
      */
-    public function demoteAccountServices(string $accessToken, string $accountId, array $services): Response
+    public function demoteOrchestratorAccountServices(string $accessToken, string $accountId, array $services): Response
     {
         return $this->karajanClient->request(
             'PUT',
@@ -261,7 +267,7 @@ abstract class AbstractKarajanManager implements KarajanManagerInterface
      * @param array<int, mixed> $services
      * @return Response
      */
-    public function lockAccountServices(string $accessToken, string $accountId, array $services): Response
+    public function lockOrchestratorAccountServices(string $accessToken, string $accountId, array $services): Response
     {
         return $this->karajanClient->request(
             'PUT',
@@ -285,7 +291,7 @@ abstract class AbstractKarajanManager implements KarajanManagerInterface
      * @param array<int, mixed> $services
      * @return Response
      */
-    public function unlockAccountServices(string $accessToken, string $accountId, array $services): Response
+    public function unlockOrchestratorAccountServices(string $accessToken, string $accountId, array $services): Response
     {
         return $this->karajanClient->request(
             'PUT',
@@ -308,7 +314,7 @@ abstract class AbstractKarajanManager implements KarajanManagerInterface
      * @param string $accountId
      * @return Response
      */
-    public function deleteAccount(string $accessToken, string $accountId): Response
+    public function deleteOrchestratorAccount(string $accessToken, string $accountId): Response
     {
         return $this->karajanClient->request(
             'DELETE',
@@ -318,7 +324,7 @@ abstract class AbstractKarajanManager implements KarajanManagerInterface
                     'Authorization' => sprintf('Bearer %s', $accessToken)
                 ]
             ]
-            );
+        );
     }
     
     /**
@@ -392,17 +398,21 @@ abstract class AbstractKarajanManager implements KarajanManagerInterface
      * @param string $accessToken
      * @return Response
      */
-    public function listProvisioningAlgorithms(string $accessToken): Response
+    public function listOrchestratorProvisioningAlgorithms(string $accessToken): Response
     {
-        return $this->karajanClient->request(
-            'GET',
-            '/orchestrator/v1/rest/provisioning-algorithms',
-            [
-                RequestOptions::HEADERS => [
-                    'Authorization' => sprintf('Bearer %s', $accessToken)
+        $cacheKey = $this->buildCacheKey('GET', '/orchestrator/v1/rest/provisioning-algorithms', []);
+        
+        return $this->cacheManager->get($cacheKey, function () use ($accessToken): Response {
+            return $this->karajanClient->request(
+                'GET',
+                '/orchestrator/v1/rest/provisioning-algorithms',
+                [
+                    RequestOptions::HEADERS => [
+                        'Authorization' => sprintf('Bearer %s', $accessToken),
+                    ],
                 ]
-            ]
             );
+        }, ttl: 3600);
     }
     
     /**
@@ -411,18 +421,27 @@ abstract class AbstractKarajanManager implements KarajanManagerInterface
      * @param string $serviceId
      * @return Response
      */
-    public function getService(string $accessToken, string $serviceId): Response
+    public function getOrchestratorService(string $accessToken, string $serviceId): Response
     {
-        return $this->karajanClient->request(
-            'GET',
-            sprintf('/orchestrator/v1/rest/services/%s', $serviceId),
-            [
-                RequestOptions::HEADERS => [
-                    'Authorization' => sprintf('Bearer %s', $accessToken),
-                    'Accept' => 'application/json'
+        $cacheKey = $this->buildCacheKey('GET', "/orchestrator/v1/rest/services/$serviceId", []);
+        
+        return $this->cacheManager->get($cacheKey, function () use ($accessToken, $serviceId): Response {
+            return $this->karajanClient->request(
+                'GET',
+                sprintf('/orchestrator/v1/rest/services/%s', $serviceId),
+                [
+                    RequestOptions::HEADERS => [
+                        'Authorization' => sprintf('Bearer %s', $accessToken),
+                        'Accept' => 'application/json',
+                    ],
                 ]
-            ]
-            );
+                );
+        }, ttl: 300);
+    }
+    
+    private function buildCacheKey(string $method, string $endpoint, array $params): string
+    {
+        return $method . '_' . md5($endpoint . serialize($params));
     }
 }
 

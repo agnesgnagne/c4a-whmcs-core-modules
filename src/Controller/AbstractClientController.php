@@ -21,6 +21,8 @@ abstract class AbstractClientController implements ControllerInterface
     
     /** @var KarajanManagerInterface $karajanManager **/
     protected KarajanManagerInterface $karajanManager;
+    
+    private array $actionMap = [];
 
     /**
      * @param TranslatorInterface $translator
@@ -34,6 +36,37 @@ abstract class AbstractClientController implements ControllerInterface
         $this->whmcsRepository = $whmcsRepository;
         $this->templateManager = $templateManager;
         $this->karajanManager = $karajanManager;
+    }
+    
+    /**
+     * @return HandlerInterface[]
+     */
+    abstract protected function getHandlers(): array;
+    
+    private function buildActionMap(): void
+    {
+        if (!empty($this->actionMap)) {
+            return;
+        }
+        
+        foreach ($this->getHandlers() as $handler) {
+            $reflection = new ReflectionClass($handler);
+            $methods = array_filter(
+                $reflection->getMethods(ReflectionMethod::IS_PUBLIC),
+                fn($m) => $m->getDeclaringClass()->getName() === $reflection->getName()
+                );
+            
+            foreach ($methods as $method) {
+                $this->actionMap[$method->getName()] = $handler;
+            }
+        }
+    }
+    
+    public function getHandlerFromAction(string $action): ?HandlerInterface
+    {
+        $this->buildActionMap();
+        
+        return $this->actionMap[$action] ?? null;
     }
     
     /**

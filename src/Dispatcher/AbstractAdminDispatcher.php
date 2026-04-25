@@ -60,7 +60,7 @@ abstract class AbstractAdminDispatcher implements DispatcherInterface
      *
      * @return Response|string|null
      */
-    public function dispatch(string $action, ?int $hostingId = null): Response|array|null
+    public function dispatch(string $action, ?int $id = null): Response|array|null
     {
         $this->parameters['translator'] = $this->translator;
         $this->parameters = array_merge($this->parameters, $this->buildExtraParameters());
@@ -78,7 +78,7 @@ abstract class AbstractAdminDispatcher implements DispatcherInterface
         }
     }
     
-    public function buildExtraParameters(?int $hostingId = null): array
+    public function buildExtraParameters(?int $id = null): array
     {}
     
     public function getController(TranslatorInterface $translator, WhmcsRepositoryInterface $whmcsRepository, KarajanManagerInterface $karajanManager): ControllerInterface

@@ -69,7 +69,7 @@ abstract class AbstractClientDispatcher implements DispatcherInterface
      *
      * @return array
      */
-    public function dispatch(string $action, ?int $hostingId = null): Response|array|null
+    public function dispatch(string $action, ?int $id = null): Response|array|null
     {
         $response = $this->controller->call($action, $this->parameters);
         
@@ -80,6 +80,6 @@ abstract class AbstractClientDispatcher implements DispatcherInterface
         return $response;
     }
     
-    public function buildExtraParameters(?int $hostingId = null): array
+    public function buildExtraParameters(?int $id = null): array
     {}
 }

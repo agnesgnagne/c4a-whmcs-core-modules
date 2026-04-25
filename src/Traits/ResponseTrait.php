@@ -15,6 +15,8 @@ use Smarty\Smarty;
 
 trait ResponseTrait
 {
+    use LoggerTrait;
+    
     /** @var TranslatorInterface $translator **/
     protected TranslatorInterface $translator;
     
@@ -99,7 +101,7 @@ trait ResponseTrait
             $message,
             $statusCode,
             ['Content-Type' => false === empty($vars['queryParams']['ajax']) ? 'application/json' : 'text/html']
-            );
+        );
     }
     
     /**
@@ -120,17 +122,5 @@ trait ResponseTrait
         }
         
         return new RedirectResponse($baseUrl.'?'.http_build_query($queryParams));
-    }
-    
-    /**
-     * @param array<string, mixed> $params
-     */
-    protected function log(array $params): void
-    {
-        if (function_exists('logModuleCall')) {
-            logModuleCall($params['moduleName'], $params['action'], $params['request'], $params['response']);
-        }
-        
-        return;
     }
 }

@@ -75,9 +75,9 @@ abstract class AbstractKarajanClientDispatcher implements DispatcherInterface
     public function dispatch(string $action, ?int $hostingId = null): Response|array|null
     {
         if ($hostingId) {
-            $hosting = json_decode(Capsule::table('tblhosting')->where('id', $hostingId)->get(), true);
+            $hosting = $this->whmcsRepository->findBy(['id' => $hostingId], 'tblhosting');
             
-            if (true === empty($hosting[0])) {
+            if (true === empty($hosting)) {
                 $this->log([
                     'moduleName' => $vars['moduleName'],
                     'action' => $vars['action'] ?: __FUNCTION__,
@@ -89,7 +89,7 @@ abstract class AbstractKarajanClientDispatcher implements DispatcherInterface
             }
             
             $this->parameters['hosting'] = $hosting[0];
-            $product = json_decode(Capsule::table('tblproducts')->where('id', $hosting[0]['packageid'])->get(), true);
+            $product = $this->whmcsRepository->findBy(['id' => $hosting[0]['packageid']], 'tblproducts');
             
             if (true === empty($product[0])) {
                 $this->log([
@@ -104,14 +104,18 @@ abstract class AbstractKarajanClientDispatcher implements DispatcherInterface
             
             $this->parameters['product'] = $product[0]; // Pass product package to controller
             
-            $serviceIdField = Capsule::table('tblcustomfields')->where('fieldname', 'serviceId')->where('relid', $hosting[0]['packageid'])->get();
-            $serviceIdFieldValue = Capsule::table('tblcustomfieldsvalues')
-            ->where('fieldid', $serviceIdField[0]->id)
-            ->where('relid', $hostingId)
-            ->get()
-            ;
+            $serviceIdField = $this->whmcsRepository->findOneBy([
+                'fieldname' => 'serviceId',
+                'relid' => $hosting[0]['packageid']
+            ], 'tblcustomfields');
             
-            if (true === empty($serviceIdFieldValue[0]->value)) {
+            $serviceIdFieldValue = $this->whmcsRepository->findOneBy([
+                'fieldid' => $serviceIdField->id,
+                'type' => 'product',
+                'relid' => $hostingId
+            ], 'tblcustomfieldsvalues');
+            
+            if (true === empty($serviceIdFieldValue->value)) {
                 $this->log([
                     'moduleName' => $vars['moduleName'],
                     'action' => $vars['action'] ?: __FUNCTION__,
@@ -129,7 +133,7 @@ abstract class AbstractKarajanClientDispatcher implements DispatcherInterface
             try {
                 $response = $this->karajanClient->request(
                     'GET',
-                    sprintf('%s/orchestrator/v1/rest/services/%s', $this->karajanClient->getBaseUrl(), $serviceIdFieldValue[0]->value),
+                    sprintf('%s/orchestrator/v1/rest/services/%s', $this->karajanClient->getBaseUrl(), $serviceIdFieldValue->value),
                     [
                         RequestOptions::HEADERS => [
                             'Authorization' => sprintf('Bearer %s', $this->parameters['accessToken'])
