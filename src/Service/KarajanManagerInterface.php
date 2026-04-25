@@ -11,14 +11,14 @@ interface KarajanManagerInterface
     /**
      * @return array
      */
-    public function fetchAuthToken(): array;
+    public function fetchIdentityAuthToken(): array;
     
     /**
      * @param string $accessToken
      * @param array<string, mixed> $queryParams
      * @return Response
      */
-    public function listAccounts(string $accessToken, array $queryParams = []): Response;
+    public function listOrchestratorAccounts(string $accessToken, array $queryParams = []): Response;
     
     /**
      * 
@@ -26,7 +26,7 @@ interface KarajanManagerInterface
      * @param string $accountId
      * @return Response
      */
-    public function getAccount(string $accessToken, string $accountId): Response;
+    public function getOrchestratorAccount(string $accessToken, string $accountId): Response;
     
     /**
      * 
@@ -34,7 +34,7 @@ interface KarajanManagerInterface
      * @param string $email
      * @return Response
      */
-    public function getAccountByEmail(string $accessToken, string $email): Response;
+    public function getOrchestratorAccountByEmail(string $accessToken, string $email): Response;
     
     /**
      * 
@@ -42,7 +42,7 @@ interface KarajanManagerInterface
      * @param array $data
      * @return Response
      */
-    public function createAccount(string $accessToken, array $data): Response;
+    public function createOrchestratorAccount(string $accessToken, array $data): Response;
     
     /**
      * 
@@ -51,7 +51,7 @@ interface KarajanManagerInterface
      * @param array $data
      * @return Response
      */
-    public function updateAccount(string $accessToken, string $accountId, array $data): Response;
+    public function updateOrchestratorAccount(string $accessToken, string $accountId, array $data): Response;
     
     /**
      * 
@@ -59,16 +59,7 @@ interface KarajanManagerInterface
      * @param string $accountId
      * @return Response
      */
-    public function getAccountServices(string $accessToken, string $accountId): Response;
-    
-    /**
-     * 
-     * @param string $accessToken
-     * @param string $accountId
-     * @param array $services
-     * @return Response
-     */
-    public function attachAccountServices(string $accessToken, string $accountId, array $services): Response;
+    public function getOrchestratorAccountServices(string $accessToken, string $accountId): Response;
     
     /**
      * 
@@ -77,7 +68,7 @@ interface KarajanManagerInterface
      * @param array $services
      * @return Response
      */
-    public function detachAccountServices(string $accessToken, string $accountId, array $services): Response;
+    public function attachOrchestratorAccountServices(string $accessToken, string $accountId, array $services): Response;
     
     /**
      * 
@@ -86,7 +77,7 @@ interface KarajanManagerInterface
      * @param array $services
      * @return Response
      */
-    public function promoteAccountServices(string $accessToken, string $accountId, array $services): Response;
+    public function detachOrchestratorAccountServices(string $accessToken, string $accountId, array $services): Response;
     
     /**
      * 
@@ -95,7 +86,7 @@ interface KarajanManagerInterface
      * @param array $services
      * @return Response
      */
-    public function demoteAccountServices(string $accessToken, string $accountId, array $services): Response;
+    public function promoteOrchestratorAccountServices(string $accessToken, string $accountId, array $services): Response;
     
     /**
      * 
@@ -104,7 +95,7 @@ interface KarajanManagerInterface
      * @param array $services
      * @return Response
      */
-    public function lockAccountServices(string $accessToken, string $accountId, array $services): Response;
+    public function demoteOrchestratorAccountServices(string $accessToken, string $accountId, array $services): Response;
     
     /**
      * 
@@ -113,7 +104,16 @@ interface KarajanManagerInterface
      * @param array $services
      * @return Response
      */
-    public function unlockAccountServices(string $accessToken, string $accountId, array $services): Response;
+    public function lockOrchestratorAccountServices(string $accessToken, string $accountId, array $services): Response;
+    
+    /**
+     * 
+     * @param string $accessToken
+     * @param string $accountId
+     * @param array $services
+     * @return Response
+     */
+    public function unlockOrchestratorAccountServices(string $accessToken, string $accountId, array $services): Response;
     
     /**
      * 
@@ -121,7 +121,7 @@ interface KarajanManagerInterface
      * @param string $accountId
      * @return Response
      */
-    public function deleteAccount(string $accessToken, string $accountId): Response;
+    public function deleteOrchestratorAccount(string $accessToken, string $accountId): Response;
     
     /**
      * 
@@ -153,7 +153,7 @@ interface KarajanManagerInterface
      * @param string $accessToken
      * @return Response
      */
-    public function listProvisioningAlgorithms(string $accessToken): Response;
+    public function listOrchestratorProvisioningAlgorithms(string $accessToken): Response;
     
     /**
      * 
@@ -161,6 +161,6 @@ interface KarajanManagerInterface
      * @param string $serviceId
      * @return Response
      */
-    public function getService(string $accessToken, string $serviceId): Response;
+    public function getOrchestratorService(string $accessToken, string $serviceId): Response;
 }
 
