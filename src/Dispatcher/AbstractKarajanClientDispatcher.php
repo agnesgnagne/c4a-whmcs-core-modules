@@ -16,12 +16,9 @@ use WHMCS\Cloud4Africa\Translation\TranslatorInterface;
 use WHMCS\Cloud4Africa\Service\TemplateManagerInterface;
 use WHMCS\Cloud4Africa\Controller\ControllerInterface;
 use Illuminate\Database\Capsule\Manager as Capsule;
-use WHMCS\Cloud4Africa\Traits\ResponseTrait;
 
 abstract class AbstractKarajanClientDispatcher implements DispatcherInterface
 {
-    use ResponseTrait;
-    
     /** @var TranslatorInterface $translator **/
     protected TranslatorInterface $translator;
     
@@ -75,55 +72,33 @@ abstract class AbstractKarajanClientDispatcher implements DispatcherInterface
     public function dispatch(string $action, ?int $hostingId = null): Response|array|null
     {
         if ($hostingId) {
-            $hosting = $this->whmcsRepository->findBy(['id' => $hostingId], 'tblhosting');
+            $hosting = json_decode(Capsule::table('tblhosting')->where('id', $hostingId)->get(), true);
             
-            if (true === empty($hosting)) {
-                $this->log([
-                    'moduleName' => $vars['moduleName'],
-                    'action' => $vars['action'] ?: __FUNCTION__,
-                    'request' => $vars,
-                    'response' => $this->translator->trans('client_dispatch.error.hosting_not_found')
-                ]);
-                
-                return $this->getExceptionResponse(new \Exception($this->translator->trans('client_dispatch.error.default'), 500), $vars);
+            if (true === empty($hosting[0])) {
+                logModuleCall($this->parameters['moduleName'], __FUNCTION__, [], $this->translator->trans('client_dispatch.error.hosting_not_found'));
+                throw new \Exception($this->translator->trans('client_dispatch.error.default'));
             }
             
             $this->parameters['hosting'] = $hosting[0];
-            $product = $this->whmcsRepository->findBy(['id' => $hosting[0]['packageid']], 'tblproducts');
+            $product = json_decode(Capsule::table('tblproducts')->where('id', $hosting[0]['packageid'])->get(), true);
             
             if (true === empty($product[0])) {
-                $this->log([
-                    'moduleName' => $vars['moduleName'],
-                    'action' => $vars['action'] ?: __FUNCTION__,
-                    'request' => $vars,
-                    'response' => $this->translator->trans('client_dispatch.error.hosting_not_found')
-                ]);
-                
-                return $this->getExceptionResponse(new \Exception($this->translator->trans('client_dispatch.error.default'), 500), $vars);
+                logModuleCall($this->parameters['moduleName'], __FUNCTION__, [], $this->translator->trans('client_dispatch.error.product_not_found'));
+                throw new \Exception($this->translator->trans('client_dispatch.error.default'));
             }
             
             $this->parameters['product'] = $product[0]; // Pass product package to controller
             
-            $serviceIdField = $this->whmcsRepository->findOneBy([
-                'fieldname' => 'serviceId',
-                'relid' => $hosting[0]['packageid']
-            ], 'tblcustomfields');
+            $serviceIdField = Capsule::table('tblcustomfields')->where('fieldname', 'serviceId')->where('relid', $hosting[0]['packageid'])->get();
+            $serviceIdFieldValue = Capsule::table('tblcustomfieldsvalues')
+                                        ->where('fieldid', $serviceIdField[0]->id)
+                                        ->where('relid', $hostingId)
+                                        ->get()
+            ;
             
-            $serviceIdFieldValue = $this->whmcsRepository->findOneBy([
-                'fieldid' => $serviceIdField->id,
-                'type' => 'product',
-                'relid' => $hostingId
-            ], 'tblcustomfieldsvalues');
-            
-            if (true === empty($serviceIdFieldValue->value)) {
-                $this->log([
-                    'moduleName' => $vars['moduleName'],
-                    'action' => $vars['action'] ?: __FUNCTION__,
-                    'request' => $vars,
-                    'response' => $this->translator->trans('client_dispatch.error.service_id_not_found')
-                ]);
-                
-                return $this->getExceptionResponse(new \Exception($this->translator->trans('client_dispatch.error.default'), 500), $vars);
+            if (true === empty($serviceIdFieldValue[0]->value)) {
+                logModuleCall($this->parameters['moduleName'], __FUNCTION__, [], $this->translator->trans('client_dispatch.error.service_id_not_found'));
+                throw new \Exception($this->translator->trans('client_dispatch.error.default'));
             }
             
             $token = $this->karajanClient->fetchAuthToken();
@@ -133,22 +108,19 @@ abstract class AbstractKarajanClientDispatcher implements DispatcherInterface
             try {
                 $response = $this->karajanClient->request(
                     'GET',
-                    sprintf('%s/orchestrator/v1/rest/services/%s', $this->karajanClient->getBaseUrl(), $serviceIdFieldValue->value),
+                    sprintf('%s/orchestrator/v1/rest/services/%s', $this->karajanClient->getBaseUrl(), $serviceIdFieldValue[0]->value),
                     [
                         RequestOptions::HEADERS => [
                             'Authorization' => sprintf('Bearer %s', $this->parameters['accessToken'])
                         ]
                     ]
-                    );
+                );
             } catch (RequestException $e) {
-                $this->log([
-                    'moduleName' => $vars['moduleName'],
-                    'action' => $vars['action'] ?: __FUNCTION__,
-                    'request' => $vars,
-                    'response' => $e->getResponse()->getBody()->getContents()
-                ]);
-                
-                return $this->getExceptionResponse(new \Exception($this->translator->trans('client_dispatch.error.default'), 500), $vars);
+                logModuleCall($this->parameters['moduleName'], __FUNCTION__, [], $e->getResponse()->getBody()->getContents());
+                throw new \Exception($this->translator->trans('client_dispatch.error.default'));
+            } catch (\Exception $e) {
+                logModuleCall($this->parameters['moduleName'], __FUNCTION__, [], $e->getMessage());
+                throw new \Exception($this->translator->trans('client_dispatch.error.default'));
             }
             
             $service = json_decode($response->getBody()->getContents(), true);
@@ -163,14 +135,8 @@ abstract class AbstractKarajanClientDispatcher implements DispatcherInterface
             $product = json_decode(Capsule::table('tblproducts')->where('id', $hosting[0]['packageid'])->get(), true);
             
             if (true === empty($product[0])) {
-                $this->log([
-                    'moduleName' => $vars['moduleName'],
-                    'action' => $vars['action'] ?: __FUNCTION__,
-                    'request' => $vars,
-                    'response' => $this->translator->trans('client_dispatch.error.product_not_found')
-                ]);
-                
-                return $this->getExceptionResponse(new \Exception($this->translator->trans('client_dispatch.error.default'), 500), $vars);
+                logModuleCall($this->parameters['moduleName'], __FUNCTION__, [], $this->translator->trans('client_dispatch.error.product_not_found'));
+                throw new \Exception($this->translator->trans('client_dispatch.error.default'));
             }
             
             $this->parameters['product'] = $product[0];

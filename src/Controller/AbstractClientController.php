@@ -21,8 +21,6 @@ abstract class AbstractClientController implements ControllerInterface
     
     /** @var KarajanManagerInterface $karajanManager **/
     protected KarajanManagerInterface $karajanManager;
-    
-    private array $actionMap = [];
 
     /**
      * @param TranslatorInterface $translator
@@ -39,61 +37,11 @@ abstract class AbstractClientController implements ControllerInterface
     }
     
     /**
-     * @return HandlerInterface[]
-     */
-    abstract protected function getHandlers(): array;
-    
-    private function buildActionMap(): void
-    {
-        if (!empty($this->actionMap)) {
-            return;
-        }
-        
-        foreach ($this->getHandlers() as $handler) {
-            $reflection = new ReflectionClass($handler);
-            $methods = array_filter(
-                $reflection->getMethods(ReflectionMethod::IS_PUBLIC),
-                fn($m) => $m->getDeclaringClass()->getName() === $reflection->getName()
-                );
-            
-            foreach ($methods as $method) {
-                $this->actionMap[$method->getName()] = $handler;
-            }
-        }
-    }
-    
-    public function getHandlerFromAction(string $action): ?HandlerInterface
-    {
-        $this->buildActionMap();
-        
-        return $this->actionMap[$action] ?? null;
-    }
-    
-    /**
      * @param string $str
      * @return string
      */
     protected function camelCase(string $str): string
     {
         return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $str))));
-    }
-    
-    /**
-     * Redirect response
-     * 
-     * @param array<string, mixed> $queryParams
-     * @return Response
-     */
-    protected function redirect(array $queryParams): Response
-    {
-        if (false === isset($queryParams['m'])){
-            return $this->getExceptionResponse(new \Exception($this->translator->trans('error.not_found'), 404));
-        }
-        
-        if (false === isset($queryParams['action'])){
-            return $this->getExceptionResponse(new \Exception($this->translator->trans('error.not_found'), 404));
-        }
-        
-        return new RedirectResponse('/index.php?'.http_build_query($queryParams));
     }
 }

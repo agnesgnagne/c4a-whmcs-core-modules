@@ -1,17 +1,10 @@
 {
-	"name" : "c4a/whmcs-core-modules",
-	"type" : "library",
-	"description" : "WHMCS Core Modules",
-	"require": {
-        "symfony/cache": "^7.0",
-        "predis/predis": "^2.2"
-    },
-    "config": {
-        "vendor-dir": "vendor"
-    },
-	"autoload" : {
-		"psr-4" : {
-			"WHMCS\\Cloud4Africa\\" : "src/"
-		}
-	}
+  "name": "c4a/whmcs-core-modules",
+  "type": "library",
+  "description": "WHMCS Core Modules",
+  "autoload": {
+    "psr-4": {
+      "WHMCS\\Cloud4Africa\\": "src/"
+    }
+  }
 }

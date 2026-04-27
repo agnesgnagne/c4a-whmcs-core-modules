@@ -29,17 +29,4 @@ class Helper
 
         return null;
     }
-    
-    /**
-     * Format Reidrect Url
-     * 
-     * @param string $basePath
-     * @param string $module
-     * @param string $action
-     * @param array<string, mixed> $queryParams
-     */
-    public static function formatRedirectUrl(string $basePath, array $queryParams)
-    {
-        return $basePath.'?'.http_build_query($queryParams);
-    }
 }

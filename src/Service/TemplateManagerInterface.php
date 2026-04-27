@@ -8,5 +8,5 @@ interface TemplateManagerInterface
 {
     public function resolveKey(): ?string;
 
-    public function getTemplate(?string $key = null): ?Template;
+    public function getTemplate(): ?Template;
 }

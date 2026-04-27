@@ -7,255 +7,34 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 
 class WhmcsRepository implements WhmcsRepositoryInterface
 {
-    /**
-     * @var \WHMCS\Cloud4Africa\Service\WhmcsLocalApiInterface
-     */
     private WhmcsLocalApiInterface $api;
     
-    /**
-     * @var \Illuminate\Database\Capsule\Manager
-     */
     private Capsule $capsule;
     
-    /**
-     * @var string
-     */
-    private string $tableName;
-    
-    public function __construct(WhmcsLocalApiInterface $api, Capsule $capsule, ?string $tableName = null)
+    public function __construct(WhmcsLocalApiInterface $api, Capsule $capsule)
     {
         $this->api = $api;
         $this->capsule = $capsule;
-        $this->tableName = $tableName ?? '';
     }
     
-    /**
-     * @param mixed $id
-     * @return object|NULL
-     */
-    public function find(mixed $id, ?string $table = null): ?object
-    {
-        return $this->capsule
-        ->connection()
-        ->table($table ?? $this->tableName)
-        ->where('id', $id);
-    }
-    
-    /**
-     * @param array $criteria
-     * @param string $table
-     * @return object|NULL
-     */
-    public function findOneBy(array $criteria = [], ?string $table = null): ?object
-    {
-        $query = $this->capsule->connection()->table($table ?? $this->tableName);
-        
-        foreach ($criteria as $key => $value) {
-            if (is_array($value)) {
-                $query->where($key, $value['operator'], $value['value']);
-            } else {
-                $query->where($key, $value);
-            }
-        }
-        
-        return $query->first();
-    }
-    
-    /**
-     * @param array $criteria
-     * @param string $table
-     * @return array
-     */
-    public function findBy(array $criteria = [], ?string $table = null): array
-    {
-        $query = $this->capsule->connection()->table($table ?? $this->tableName);
-        
-        foreach ($criteria as $key => $value) {
-            if (is_array($value)) {
-                $query->where($key, $value['operator'], $value['value']);
-            } else {
-                $query->where($key, $value);
-            }
-        }
-        
-        return $query->get()->toArray();
-    }
-    
-    /**
-     * @param string $column
-     * @param array $criteria
-     * @param string $table
-     * @return array
-     */
-    public function findColumn(string $column, ?array $criteria = [], ?string $table = null): array
-    {
-        $query = $this->capsule->connection()->table($this->tableName);
-        
-        foreach ($criteria as $key => $value) {
-            $query->where($key, $value);
-        }
-        
-        return $query->pluck($column)->toArray();
-    }
-    
-    /**
-     * @param string $table
-     * @return array
-     */
-    public function findAll(?string $table = null): array
-    {
-        return $this->capsule
-        ->connection()
-        ->table($table ?? $this->tableName)
-        ->get()
-        ->toArray();
-    }
-    
-    
-    /**
-     * @param array $criteria
-     * @param string $table
-     * @return int
-     */
-    public function countBy(array $criteria = [], ?string $table = null): int
-    {
-        $query = $this->capsule->connection()->table($table ?? $this->tableName);
-        
-        foreach ($criteria as $key => $value) {
-            if (is_array($value)) {
-                $query->where($key, $value[0], $value[1]);
-            } else {
-                $query->where($key, $value);
-            }
-        }
-        
-        return $query->count();
-    }
-    
-    /**
-     * @param array $criteria
-     * @param string $table
-     * @return bool
-     */
-    public function existsBy(array $criteria = [], ?string $table = null): bool
-    {
-        if (empty($criteria)) {
-            return false;
-        }
-        
-        $query = $this->capsule->connection()->table($table ?? $this->tableName);
-        
-        foreach ($criteria as $key => $value) {
-            if (is_array($value)) {
-                $query->where($key, $value[0], $value[1]);
-            } else {
-                $query->where($key, $value);
-            }
-        }
-        
-        return $query->exists();
-    }
-    
-    /**
-     * @param array $values
-     * @param string $table
-     * @return bool
-     */
-    public function insert(array $values, ?string $table = null): bool
-    {
-        return $this->capsule->connection()
-        ->table($table ?? $this->tableName)
-        ->insert($values);
-    }
-    
-    /**
-     * @param array $values
-     * @param mixed $id
-     * @return int
-     */
-    public function update(array $values = [], mixed $id, ?string $table = null): int
-    {
-        return $this->capsule
-                    ->connection()
-                    ->table($table ?? $this->tableName)
-                    ->where('id', $id)
-                    ->update($values)
-        ;
-    }
-    
-    /**
-     * @param array $values
-     * @param array $criteria
-     * @return int
-     */
-    public function updateBy(array $values = [], ?array $criteria = [], ?string $table = null): int
-    {
-        $query = $this->capsule->connection()->table($table ?? $this->tableName);
-        
-        if ($criteria) {
-            foreach ($criteria as $key => $value) {
-                if (is_array($value)) {
-                    $query->where($key, $value[0], $value[1]);
-                } else {
-                    $query->where($key, $value);
-                }
-            }
-        }
-        
-        return $query->update($values);
-    }
-    
-    /**
-     * @param mixed $id
-     * @return int
-     */
-    public function delete(mixed $id, ?string $table = null): int
-    {
-        return $this->capsule->connection()
-        ->table($table ?? $this->tableName)
-        ->where('id', $id)
-        ->delete();
-    }
-    
-    /**
-     * @param array $criteria
-     * @return int
-     */
-    public function deleteBy(array $criteria = [], ?string $table = null): int
-    {
-        $query = $this->capsule->connection()->table($table ?? $this->tableName);
-        
-        if ($criteria) {
-            foreach ($criteria as $key => $value) {
-                if (is_array($value)) {
-                    $query->where($key, $value[0], $value[1]);
-                } else {
-                    $query->where($key, $value);
-                }
-            }
-        }
-        
-        return $query->delete();
-    }
-    
-    public function selectSQL(string $sql, array $parameters = []): array
+    public function select(string $sql, array $parameters = []): array
     {
         return $this->capsule->connection()->select($sql, $parameters);
     }
     
-    public function countSQL(string $sql, array $parameters = []): int
+    public function count(string $sql, array $parameters = []): int
     {
         $results = $this->capsule->connection()->select($sql, $parameters);
         return (int) ($results[0]->count ?? 0);
     }
     
-    public function existsSQL(string $sql, array $parameters = []): bool
+    public function exists(string $sql, array $parameters = []): bool
     {
         $results = $this->capsule->connection()->select($sql, $parameters);
         return !empty($results);
     }
-    
-    public function insertSQL(string $sql, array $parameters = []): void
+
+    public function insert(string $sql, array $parameters = []): void
     {
         $this->capsule->connection()->insert($sql, $parameters);
         return;
@@ -264,7 +43,7 @@ class WhmcsRepository implements WhmcsRepositoryInterface
     /**
      * @return void
      */
-    public function updateSQL(string $sql, array $parameters = []): void
+    public function update(string $sql, array $parameters = []): void
     {
         $this->capsule->connection()->update($sql, $parameters);
         return;
@@ -273,25 +52,25 @@ class WhmcsRepository implements WhmcsRepositoryInterface
     /**
      * @return void
      */
-    public function deleteSQL(string $sql, array $parameters = []): void
+    public function delete(string $sql, array $parameters = []): void
     {
         $this->capsule->connection()->delete($sql, $parameters);
         return;
     }
-    
+
     public function findValidKarajanToken(): array
     {
         $now = date('c');
-        
+
         return $this->capsule->connection()->select(
             "SELECT *
             FROM c4a_karajan_token
             WHERE expires_at > ?
             LIMIT 1",
             [$now]
-            );
+        );
     }
-    
+
     public function findKarajanServer(string $serverType = 'karajan'): array
     {
         return $this->capsule->connection()->select(
@@ -300,7 +79,7 @@ class WhmcsRepository implements WhmcsRepositoryInterface
             WHERE type = ?
             LIMIT 1",
             [$serverType]
-            );
+        );
     }
     
     public function getRawProducts(): array
@@ -703,16 +482,6 @@ class WhmcsRepository implements WhmcsRepositoryInterface
         ]);
     }
     
-    /**
-     * 
-     * @param int $clientId
-     * @param int $serviceId
-     * @return array{
-     *     result: string,
-     *     totalresults: int,
-     *     products?: mixed
-     * }
-     */
     public function getClientProductByServiceId(int $clientId, int $serviceId): array
     {
         return $this->api->call('GetClientsProducts', [
@@ -749,13 +518,6 @@ class WhmcsRepository implements WhmcsRepositoryInterface
     {
         return $this->api->call('DomainWhois', [
             'domain' => $domain,
-        ]);
-    }
-    
-    public function getDecryptedPassword($password): array
-    {
-        return $this->api->call('DecryptPassword', [
-            'password2' => $password,
         ]);
     }
 }

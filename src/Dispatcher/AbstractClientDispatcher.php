@@ -11,7 +11,6 @@ use WHMCS\Cloud4Africa\Repository\WhmcsLocalApiManager;
 use WHMCS\Cloud4Africa\Repository\WhmcsRepositoryInterface;
 use WHMCS\Cloud4Africa\Translation\TranslatorInterface;
 use WHMCS\Cloud4Africa\Service\TemplateManagerInterface;
-use WHMCS\Cloud4Africa\Service\KarajanManagerInterface;
 use WHMCS\Cloud4Africa\Controller\ControllerInterface;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
@@ -29,19 +28,13 @@ abstract class AbstractClientDispatcher implements DispatcherInterface
     /** @var ControllerInterface $controller **/
     protected ControllerInterface $controller;
     
-    /** @var KarajanManagerInterface $karajanManager **/
-    protected KarajanManagerInterface $karajanManager;
-    
     /** @var array $parameters **/
     protected $parameters;
     
     /**
-     * 
-     * @param TranslatorInterface $translator
+     * @param Translator $translator
      * @param WhmcsRepositoryInterface $whmcsRepository
-     * @param TemplateManagerInterface $templateManager
-     * @param ControllerInterface $controller
-     * @param KarajanManagerInterface $karajanManager
+     * @param TemplateManager $templateManager
      * @param array $parameters
      */
     public function __construct(
@@ -49,7 +42,6 @@ abstract class AbstractClientDispatcher implements DispatcherInterface
         WhmcsRepositoryInterface $whmcsRepository,
         TemplateManagerInterface $templateManager,
         ControllerInterface $controller,
-        KarajanManagerInterface $karajanManager,
         array $parameters
         )
     {
@@ -57,7 +49,6 @@ abstract class AbstractClientDispatcher implements DispatcherInterface
         $this->whmcsRepository = $whmcsRepository;
         $this->templateManager = $templateManager;
         $this->controller = $controller;
-        $this->karajanManager = $karajanManager;
         $this->parameters = $parameters;
     }
     
@@ -69,7 +60,7 @@ abstract class AbstractClientDispatcher implements DispatcherInterface
      *
      * @return array
      */
-    public function dispatch(string $action, ?int $id = null): Response|array|null
+    public function dispatch(string $action, ?int $hostingId = null): Response|array|null
     {
         $response = $this->controller->call($action, $this->parameters);
         
@@ -80,6 +71,6 @@ abstract class AbstractClientDispatcher implements DispatcherInterface
         return $response;
     }
     
-    public function buildExtraParameters(?int $id = null): array
+    public function buildExtraParameters(?int $hostingId = null): array
     {}
 }
